@@ -1,6 +1,3 @@
-/** The exit code for a missing or unknown command. */
-export const USAGE_EXIT: number = 2;
-
 /** Where the user's arguments start in `process.argv`, after the runtime and the script. */
 export const ARGV_START: number = 2;
 

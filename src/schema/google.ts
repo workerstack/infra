@@ -1,3 +1,5 @@
+import type { InfraScope } from "./infra.ts";
+
 /**
  * Google OAuth 2.0 client — per env. infra does not provision the OAuth client itself
  * (Google Cloud Console only); this config describes consumer-side wiring.
@@ -38,8 +40,8 @@ export type GoogleSearchConsole = {
  * Top-level Google provider config.
  */
 export type GoogleConfig = {
-  /** Per-env OAuth clients. */
-  oauth?: Record<string, GoogleOAuthEnv>;
+  /** Per-scope OAuth clients. */
+  oauth?: Partial<Record<InfraScope, GoogleOAuthEnv>>;
   /** Search Console programmatic access. */
   searchConsole?: GoogleSearchConsole;
 };

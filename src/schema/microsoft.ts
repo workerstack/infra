@@ -1,3 +1,5 @@
+import type { InfraScope } from "./infra.ts";
+
 /**
  * Microsoft Entra (Azure AD) OAuth app — per env. Auto-provisioned via Graph API on apply.
  * The client secret is `MICROSOFT_CLIENT_SECRET` in the env (per scope).
@@ -30,6 +32,6 @@ export type MicrosoftOAuthEnv = {
  * used to auto-provision the OAuth app) is `MICROSOFT_GRAPH_API_TOKEN` in the env (global).
  */
 export type MicrosoftConfig = {
-  /** Per-env OAuth clients. */
-  oauth?: Record<string, MicrosoftOAuthEnv>;
+  /** Per-scope OAuth clients. */
+  oauth?: Partial<Record<InfraScope, MicrosoftOAuthEnv>>;
 };

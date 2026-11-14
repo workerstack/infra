@@ -1,7 +1,7 @@
-import { USAGE_EXIT } from "../bin/dispatch.constants.ts";
 import { cfCommand } from "../src/cf-command.ts";
 import { cfEnv } from "../src/cf-env.ts";
 import { runInProduct } from "../src/run-in-product.ts";
+import { USAGE_EXIT } from "../src/usage-exit.constants.ts";
 
 export function main(args: readonly string[]): Promise<number> {
   if (args.length === 0) {

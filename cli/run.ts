@@ -1,5 +1,5 @@
-import { USAGE_EXIT } from "../bin/dispatch.constants.ts";
 import { runInProduct } from "../src/run-in-product.ts";
+import { USAGE_EXIT } from "../src/usage-exit.constants.ts";
 import { wranglerEnv } from "../src/wrangler-env.ts";
 
 const MIN_ARGS = 2;

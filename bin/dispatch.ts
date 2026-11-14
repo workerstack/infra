@@ -1,7 +1,8 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { ARGV_START, COMMAND_NAME, USAGE_EXIT } from "./dispatch.constants.ts";
+import { USAGE_EXIT } from "../src/usage-exit.constants.ts";
+import { ARGV_START, COMMAND_NAME } from "./dispatch.constants.ts";
 
 type Command = { main: (args: readonly string[]) => Promise<number> };
 

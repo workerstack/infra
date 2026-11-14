@@ -1,3 +1,5 @@
+import type { InfraScope } from "./infra.ts";
+
 /**
  * Apple Sign in with Apple OAuth config — per env.
  * infra does not provision at Apple Developer Portal; this describes consumer-side wiring.
@@ -29,6 +31,6 @@ export type AppleOAuthEnv = {
  * Top-level Apple provider config.
  */
 export type AppleConfig = {
-  /** Per-env Sign in with Apple clients. */
-  oauth?: Record<string, AppleOAuthEnv>;
+  /** Per-scope Sign in with Apple clients. */
+  oauth?: Partial<Record<InfraScope, AppleOAuthEnv>>;
 };
