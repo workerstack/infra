@@ -9,12 +9,19 @@ An `infra.config.ts` describes one product's infrastructure. It default-exports 
 
 ```ts
 import { defineInfraConfig } from "@workerstack/infra";
+import { defineEnv } from "@workerstack/repo/env";
+
+// Normally its own file (`web.env.ts`) that the config imports; the account credentials live in its `global` block.
+const env = defineEnv({
+  dev: {},
+  global: { CLOUDFLARE_ACCOUNT_ID: "fedcba9876543210fedcba9876543210" },
+  local: {},
+  prod: {},
+});
 
 export default defineInfraConfig({
+  env,
   cloudflare: {
-    accountEmail: "ops@example.com",
-    accountId: "fedcba9876543210fedcba9876543210",
-    globalApiKey: process.env.CLOUDFLARE_API_KEY ?? "",
     zone: { domain: "example.com", zoneId: "0123456789abcdef0123456789abcdef" },
   },
   local: {
@@ -23,6 +30,8 @@ export default defineInfraConfig({
   },
 });
 ```
+
+`env` is any object with a `global` view of string values, such as a `defineEnv` instance. `defineInfraConfig` keeps it as given and never reads a value; a command reads the credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`) when it runs. A secret field in the config is a type error.
 
 ## Products
 

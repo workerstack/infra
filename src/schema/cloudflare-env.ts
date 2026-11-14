@@ -1,5 +1,6 @@
 /**
  * Cloudflare Turnstile widget config — per env, auto-provisioned via CF v4 API.
+ * The server-side secret for verifying tokens is `TURNSTILE_SECRET_KEY` in the env (per scope).
  */
 export type CloudflareTurnstileEnv = {
   /**
@@ -27,12 +28,6 @@ export type CloudflareTurnstileEnv = {
   /** Human-readable name shown in CF dashboard. */
   name: string;
   /**
-   * Server-side secret for verifying client-submitted tokens against
-   * `challenges.cloudflare.com/turnstile/v0/siteverify`. Never ship to the browser —
-   * store in app secret manager and keep out of client bundles.
-   */
-  secretKey: string;
-  /**
    * Public key safely embedded in the client widget (`<div data-sitekey="...">`).
    * Tied to `domains` — a leaked siteKey only works from allowed origins.
    */
@@ -41,23 +36,21 @@ export type CloudflareTurnstileEnv = {
 
 /**
  * Single Google SSO identity provider — the one human auth path per env.
+ * The client secret is `ACCESS_GOOGLE_CLIENT_SECRET` in the env (per scope).
  */
 export type CloudflareAccessGoogleIdP = {
   /** Google OAuth 2.0 client ID from console.cloud.google.com. */
   clientId: string;
-  /** Consumer-side only — not provisioned by infra. Store in your app secret manager. */
-  clientSecret: string;
 };
 
 /**
  * Single CF Access service token per env — the one backend auth path. Generated once
  * by the runner on first `set` and written back to the config; rotate via CF dashboard.
+ * The client secret is `ACCESS_SERVICE_TOKEN_CLIENT_SECRET` in the env (per scope).
  */
 export type CloudflareAccessServiceToken = {
   /** `"STUB"` on first run, populated by runner. */
   clientId: string;
-  /** `"STUB"` on first run, populated by runner. */
-  clientSecret: string;
   /** Human-readable, unique per CF account. */
   name: string;
 };
@@ -101,13 +94,11 @@ export type CloudflareAccessEnv = {
 
 /**
  * R2 S3-compatible credentials. Required when you hit R2 directly (not via binding) —
- * e.g. from a non-worker backup job.
+ * e.g. from a non-worker backup job. The secret access key is `R2_SECRET_ACCESS_KEY` in the env (per scope).
  */
 export type CloudflareR2Credentials = {
   /** R2 access key ID. */
   accessKeyId: string;
   /** S3 endpoint URL, shape `https://{accountId}.r2.cloudflarestorage.com`. */
   endpoint: string;
-  /** R2 secret access key. Store in app secret manager. */
-  secretAccessKey: string;
 };

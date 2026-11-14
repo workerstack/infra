@@ -5,12 +5,12 @@ import { fileURLToPath } from "node:url";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { discoverProducts, selectProducts } from "./products.ts";
+import { discoverProducts, productAt, selectProducts } from "./products.ts";
 
 const DEFINE = fileURLToPath(new URL("define-infra-config.ts", import.meta.url));
 
 const WITH_DEFAULT = `import { defineInfraConfig } from ${JSON.stringify(DEFINE)};
-export default defineInfraConfig({ local: { host: "app.localhost", vars: () => ({}) } });
+export default defineInfraConfig({ env: { global: {} }, local: { host: "app.localhost", vars: () => ({}) } });
 `;
 
 let root = "";
@@ -132,6 +132,46 @@ describe("selectProducts errors", () => {
 
     expect(selectProducts(root, products, undefined)).toStrictEqual({
       error: "2 products; name one or pass --all: apps/admin, apps/web",
+      ok: false,
+    });
+  });
+});
+
+describe("productAt", () => {
+  it("picks the deepest product holding the dir", async () => {
+    writeConfig("apps/web");
+    writeConfig("apps/web/api");
+
+    const products = await discoverProducts(root);
+    const picked = productAt(root, products, join(root, "apps/web/api/src"));
+
+    expect(picked.ok && picked.products.map((product) => product.name)).toStrictEqual(["apps/web/api"]);
+  });
+
+  it("picks a product for its own root", async () => {
+    writeConfig("apps/web");
+
+    const products = await discoverProducts(root);
+
+    expect(productAt(root, products, join(root, "apps/web"))).toStrictEqual({ ok: true, products });
+  });
+
+  it("does not treat apps/web2 as inside apps/web", async () => {
+    writeConfig("apps/web");
+
+    const products = await discoverProducts(root);
+
+    expect(productAt(root, products, join(root, "apps/web2"))).toStrictEqual({
+      error: `no product holds ${join(root, "apps/web2")}; run it inside one of: apps/web`,
+      ok: false,
+    });
+  });
+
+  it("lists the products when none holds the dir", async () => {
+    const products = await three();
+
+    expect(productAt(root, products, root)).toStrictEqual({
+      error: `no product holds ${root}; run it inside one of: apps/admin, apps/web`,
       ok: false,
     });
   });

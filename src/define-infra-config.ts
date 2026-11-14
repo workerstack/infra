@@ -1,4 +1,5 @@
 // This file imports only `.ts` files, so Node loads it without a bundler.
+import type { EnvBindings } from "./schema/bindings.ts";
 import type { InfraConfig, InfraConfigInput } from "./schema/infra.ts";
 import type { LocalConfig } from "./schema/local-config.ts";
 import { parseZoneConfig } from "./schema/zone.ts";
@@ -7,27 +8,19 @@ import { parseZoneConfig } from "./schema/zone.ts";
 // and its own subdomains (`api.example.localhost`) stay under it.
 const LOCAL_HOST = /^[a-z0-9-]+\.localhost$/;
 
-// Generic so `cloudflare.bindings` keeps its binding names: an `infra.config.ts` autocompletes them.
-export function defineInfraConfig<const T extends InfraConfigInput>(
-  input: T,
-): InfraConfig & {
-  cloudflare?: { bindings: NonNullable<NonNullable<T["cloudflare"]>["bindings"]> };
-} {
-  const result: InfraConfig & {
-    cloudflare?: { bindings: NonNullable<NonNullable<T["cloudflare"]>["bindings"]> };
-  } = {};
+type Result<B extends Record<string, EnvBindings>> = InfraConfig & { cloudflare?: { bindings: B } };
+
+// Generic in the bindings only, so `cloudflare.bindings` keeps its names and excess properties stay errors.
+// `env` is kept by reference: no value of it is read here.
+export function defineInfraConfig<const B extends Record<string, EnvBindings>>(input: InfraConfigInput<B>): Result<B> {
+  const result: Result<B> = { env: input.env };
 
   if (input.cloudflare !== undefined) {
     result.cloudflare = {
       access: input.cloudflare.access,
-      accountEmail: input.cloudflare.accountEmail,
-      accountId: input.cloudflare.accountId,
-      bindings: input.cloudflare.bindings ?? {},
-      globalApiKey: input.cloudflare.globalApiKey,
-      masterApiToken: input.cloudflare.masterApiToken,
+      bindings: input.cloudflare.bindings ?? ({} /* an empty record has no names to lose */ as B),
       r2: input.cloudflare.r2,
       turnstile: input.cloudflare.turnstile,
-      workerApiToken: input.cloudflare.workerApiToken,
       zone: parseZoneConfig(input.cloudflare.zone),
     };
   }

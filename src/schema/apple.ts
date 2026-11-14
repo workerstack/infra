@@ -1,6 +1,7 @@
 /**
  * Apple Sign in with Apple OAuth config — per env.
  * infra does not provision at Apple Developer Portal; this describes consumer-side wiring.
+ * The PEM private key (.p8 contents) is `APPLE_PRIVATE_KEY` in the env (per scope).
  */
 export type AppleOAuthEnv = {
   /**
@@ -9,12 +10,6 @@ export type AppleOAuthEnv = {
    * alongside the .p8 file download (Apple won't let you re-download the key material later).
    */
   keyId: string;
-  /**
-   * PEM-formatted private key (.p8 file contents). Store in app secret manager.
-   * In .env, escape newlines as `\n`. Cannot be recovered from Apple — if lost, revoke
-   * the old key and create a new one.
-   */
-  privateKey: string;
   /** Allowed redirect URIs; must match Apple Developer Portal "Return URLs" exactly. */
   redirectOrigins: string[];
   /**

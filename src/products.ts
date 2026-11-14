@@ -1,5 +1,5 @@
 import { globSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import type { InfraConfig } from "./schema/infra.ts";
@@ -69,4 +69,27 @@ export function selectProducts(root: string, products: Product[], target: Produc
   if (products.length > 1) return { error: `${products.length} products; name one or pass --all: ${names}`, ok: false };
 
   return { ok: true, products };
+}
+
+/** The deepest product whose root is `dir` or an ancestor of it; a relative `dir` is taken from `root`. */
+export function productAt(root: string, products: Product[], dir: string): Selection {
+  const target = resolve(root, dir);
+
+  const holding = products
+    .filter((product) => holds(product.root, target))
+    .toSorted((a, b) => b.root.length - a.root.length);
+
+  const [deepest] = holding;
+
+  if (deepest !== undefined) return { ok: true, products: [deepest] };
+
+  const names = products.map((product) => product.name).join(", ");
+
+  return { error: `no product holds ${target}; run it inside one of: ${names}`, ok: false };
+}
+
+function holds(productRoot: string, dir: string): boolean {
+  const path = relative(productRoot, dir);
+
+  return path !== ".." && !path.startsWith(`..${sep}`) && !isAbsolute(path);
 }

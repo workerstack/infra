@@ -10,7 +10,8 @@
 - [@workerstack/testing](https://www.npmjs.com/package/@workerstack/testing): End-to-end matrix testing for APIs, web apps and Workers
 <!-- /repo:available -->
 
-<!-- repo:refs 912ce434 -->
+<!-- repo:refs ebd1bc0d -->
 - `install.md`: Install the package
 - `config.md`: Config and product discovery
+- `credentials.md`: Credentials from defineEnv
 <!-- /repo:refs -->

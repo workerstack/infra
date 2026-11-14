@@ -1,13 +1,12 @@
 /**
  * Microsoft Entra (Azure AD) OAuth app — per env. Auto-provisioned via Graph API on apply.
+ * The client secret is `MICROSOFT_CLIENT_SECRET` in the env (per scope).
  */
 export type MicrosoftOAuthEnv = {
   /** Display name shown in Entra admin portal. */
   appName: string;
   /** Populated by runner on first provision. */
   clientId: string;
-  /** Consumer-side only — not provisioned by infra. Store in your app secret manager. */
-  clientSecret: string;
   /** Allowed redirect URIs. */
   redirectOrigins: string[];
   /**
@@ -27,14 +26,10 @@ export type MicrosoftOAuthEnv = {
 };
 
 /**
- * Top-level Microsoft provider config.
+ * Top-level Microsoft provider config. The Graph API bearer token (`Application.ReadWrite.All`,
+ * used to auto-provision the OAuth app) is `MICROSOFT_GRAPH_API_TOKEN` in the env (global).
  */
 export type MicrosoftConfig = {
-  /**
-   * Bearer token for Graph API with `Application.ReadWrite.All` scope. Used to auto-provision
-   * the OAuth app on apply. Store in app secret manager.
-   */
-  graphApiToken: string;
   /** Per-env OAuth clients. */
   oauth?: Record<string, MicrosoftOAuthEnv>;
 };

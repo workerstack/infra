@@ -1,4 +1,4 @@
-# repo:generated 7fefd929
+# repo:generated f19ee5f7
 * text=auto eol=lf
 .githooks/commit-msg linguist-generated
 .githooks/pre-commit linguist-generated
@@ -11,6 +11,7 @@
 .github/workflows/ci.yml linguist-generated
 .github/workflows/nightly.yml linguist-generated
 .github/workflows/release.yml linguist-generated
+.repo/.gitkeep linguist-generated
 .vscode/tasks.json linguist-generated
 CONTRIBUTING.md linguist-generated
 README.md linguist-generated

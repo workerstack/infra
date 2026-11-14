@@ -1,0 +1,20 @@
+import { USAGE_EXIT } from "../bin/dispatch.constants.ts";
+import { cfCommand } from "../src/cf-command.ts";
+import { cfEnv } from "../src/cf-env.ts";
+import { runInProduct } from "../src/run-in-product.ts";
+
+export function main(args: readonly string[]): Promise<number> {
+  if (args.length === 0) {
+    process.stderr.write("usage: infra cf [args...]\n");
+
+    return Promise.resolve(USAGE_EXIT);
+  }
+
+  return runInProduct({
+    childEnv: (env) => cfEnv(env),
+    cwd: process.cwd(),
+    dir: process.cwd(),
+    name: "cf",
+    program: (root) => cfCommand(root, args, process.execPath),
+  });
+}

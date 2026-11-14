@@ -48,7 +48,7 @@ export type {
 
 export type { GoogleConfig, GoogleOAuthEnv, GoogleSearchConsole } from "./schema/google.ts";
 
-export type { InfraConfig, InfraConfigInput } from "./schema/infra.ts";
+export type { InfraConfig, InfraConfigInput, InfraEnv } from "./schema/infra.ts";
 
 export type { LocalConfig } from "./schema/local-config.ts";
 

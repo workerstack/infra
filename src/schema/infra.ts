@@ -1,17 +1,29 @@
 import type { AppleConfig } from "./apple.ts";
+import type { EnvBindings } from "./bindings.ts";
 import type { CloudflareConfig, CloudflareConfigInput } from "./cloudflare.ts";
 import type { GoogleConfig } from "./google.ts";
 import type { LocalConfig } from "./local-config.ts";
 import type { MicrosoftConfig } from "./microsoft.ts";
 
 /**
- * Top-level multi-provider infrastructure config — pre-parse shape. Pass to `defineInfraConfig`.
+ * The product's env: any object with a `global` view of string values, such as a `defineEnv`
+ * instance. Account credentials are read from `global` when a command runs, never at config load.
  */
-export type InfraConfigInput = {
+export type InfraEnv = {
+  readonly global: Readonly<Record<string, string | undefined>>;
+};
+
+/**
+ * Top-level multi-provider infrastructure config — pre-parse shape. Pass to `defineInfraConfig`.
+ * Generic in the binding sets only, so `cloudflare.bindings` keeps its names.
+ */
+export type InfraConfigInput<B extends Record<string, EnvBindings> = Record<string, EnvBindings>> = {
   /** Apple provider (Sign in with Apple). */
   apple?: AppleConfig;
   /** Cloudflare provider (zone, bindings, Access, Turnstile, R2). */
-  cloudflare?: CloudflareConfigInput;
+  cloudflare?: CloudflareConfigInput<B>;
+  /** The product env holding the account credentials. */
+  env: InfraEnv;
   /** Google provider (OAuth, Search Console). */
   google?: GoogleConfig;
   /** The local stack's host and URL vars. */
@@ -27,6 +39,7 @@ export type InfraConfigInput = {
 export type InfraConfig = {
   apple?: AppleConfig;
   cloudflare?: CloudflareConfig;
+  env: InfraEnv;
   google?: GoogleConfig;
   local?: LocalConfig;
   microsoft?: MicrosoftConfig;

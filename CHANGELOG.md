@@ -10,3 +10,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `defineInfraConfig` with the Cloudflare zone schema and its defaults, and `discoverProducts` and `selectProducts`, which find each `infra.config.ts` under a repo root
+- Infra configs take a defineEnv instance for credentials; infra run and infra cf run wrangler and cf with them.
