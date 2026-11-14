@@ -31,7 +31,7 @@ export default defineInfraConfig({
 });
 ```
 
-`env` is any object with a `global` view of string values, such as a `defineEnv` instance. `defineInfraConfig` keeps it as given and never reads a value; a command reads the credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`) when it runs. A secret field in the config is a type error.
+`env` is any object with `global`, `local`, `dev` and `prod` views of string values, such as a `defineEnv` instance. `defineInfraConfig` keeps it as given and never reads a value; a command reads the credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`) when it runs. A secret field in the config is a type error.
 
 ## Products
 

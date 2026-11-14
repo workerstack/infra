@@ -1,6 +1,18 @@
+export { accountAuth } from "./api/auth.ts";
+
+export type { CfAuth } from "./api/auth.ts";
+
+export { createClient } from "./api/client.ts";
+
+export type { CfClient } from "./api/client.ts";
+
 export { defineInfraConfig } from "./define-infra-config.ts";
 
 export { discoverProducts, INFRA_CONFIG_FILE, selectProducts } from "./products.ts";
+
+export type { ConfigEdit } from "./provision/config-edit.ts";
+
+export type { SecretWrite } from "./provision/secret-write.ts";
 
 export type { Product, ProductTarget, Selection } from "./products.ts";
 
@@ -48,7 +60,7 @@ export type {
 
 export type { GoogleConfig, GoogleOAuthEnv, GoogleSearchConsole } from "./schema/google.ts";
 
-export type { InfraConfig, InfraConfigInput, InfraEnv } from "./schema/infra.ts";
+export type { InfraConfig, InfraConfigInput, InfraEnv, InfraScope } from "./schema/infra.ts";
 
 export type { LocalConfig } from "./schema/local-config.ts";
 

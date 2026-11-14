@@ -10,7 +10,10 @@ import { discoverProducts, productAt, selectProducts } from "./products.ts";
 const DEFINE = fileURLToPath(new URL("define-infra-config.ts", import.meta.url));
 
 const WITH_DEFAULT = `import { defineInfraConfig } from ${JSON.stringify(DEFINE)};
-export default defineInfraConfig({ env: { global: {} }, local: { host: "app.localhost", vars: () => ({}) } });
+export default defineInfraConfig({
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+  local: { host: "app.localhost", vars: () => ({}) },
+});
 `;
 
 let root = "";

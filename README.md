@@ -9,6 +9,7 @@ Cloudflare infrastructure as code for workerstack repos
 - [@workerstack/infra](#workerstackinfra-1)
 - [Config](#config)
 - [Credentials](#credentials)
+- [API client](#api-client)
 
 ## @workerstack/infra
 
@@ -44,7 +45,7 @@ export default defineInfraConfig({
 });
 ```
 
-`env` is any object with a `global` view of string values, such as a `defineEnv` instance. `defineInfraConfig` keeps it as given and never reads a value; a command reads the credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`) when it runs. A secret field in the config is a type error.
+`env` is any object with `global`, `local`, `dev` and `prod` views of string values, such as a `defineEnv` instance. `defineInfraConfig` keeps it as given and never reads a value; a command reads the credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`) when it runs. A secret field in the config is a type error.
 
 ### Products
 
@@ -100,7 +101,7 @@ export default defineInfraConfig({
 });
 ```
 
-Write a sealed value with `bun repo env set CLOUDFLARE_API_KEY --scope global`. The `env` field is typed `InfraEnv`: any object with a `global` view of string values.
+Write a sealed value with `bun repo env set CLOUDFLARE_API_KEY --scope global`. The `env` field is typed `InfraEnv`: any object with `global`, `local`, `dev` and `prod` views of string values (`InfraScope` names the last three). A key read per scope, such as an Access secret, is missing when its view has no value: `ACCESS_GOOGLE_CLIENT_SECRET has no prod value; run bun repo env set ACCESS_GOOGLE_CLIENT_SECRET --scope prod`.
 
 ### Keys
 
@@ -132,3 +133,59 @@ infra run: CLOUDFLARE_API_KEY has no global value; run bun repo env set CLOUDFLA
 ### Test runners
 
 Both commands refuse to run when `VITEST` is set or `NODE_ENV` is `test`. The guard runs before any value is read, so a test never decrypts a secret. A test uses a fake instead.
+
+## API client
+
+`createClient(auth, zoneId)` returns a `CfClient`: one `request(method, path, body)` call that parses Cloudflare's response envelope and returns its `result`. A failed envelope throws one line.
+
+```console
+CF API GET /zones/abc/dns_records: Invalid zone identifier
+```
+
+### accountAuth and CfAuth
+
+`accountAuth(env)` reads the account credentials from `env.global` when it is called. It returns a `CfAuth`: the API token when `CLOUDFLARE_API_TOKEN` is set, else the account email with its global key. A missing key throws the fix line from [credentials](#credentials).
+
+```ts
+import { accountAuth, createClient } from "@workerstack/infra";
+import type { CfAuth, CfClient } from "@workerstack/infra";
+
+const env = {
+  dev: {},
+  global: {
+    CLOUDFLARE_ACCOUNT_EMAIL: "ops@example.com",
+    CLOUDFLARE_ACCOUNT_ID: "fedcba9876543210fedcba9876543210",
+    CLOUDFLARE_API_KEY: "example-key",
+  },
+  local: {},
+  prod: {},
+};
+
+const auth: CfAuth = accountAuth(env);
+const client: CfClient = createClient(auth, "0123456789abcdef0123456789abcdef");
+
+export const records = client.request<object[]>("GET", `/zones/${client.zoneId}/dns_records`);
+```
+
+### InfraScope
+
+`InfraScope` is `"local" | "dev" | "prod"`. A per-scope secret is read from the env view of that name.
+
+```ts
+import type { InfraScope } from "@workerstack/infra";
+
+export const scopes: InfraScope[] = ["local", "dev", "prod"];
+```
+
+### SecretWrite and ConfigEdit
+
+Provisioning returns two kinds of change. A `ConfigEdit` is a text edit to a config file, for an id only: a D1 `database_id`, a KV `id`, a Turnstile `siteKey` or an Access `clientId`. A `SecretWrite` is a secret to put in the env under `key` for `scope`, such as `TURNSTILE_SECRET_KEY` or `ACCESS_SERVICE_TOKEN_CLIENT_SECRET`. A secret is never part of an edit.
+
+```ts
+import type { ConfigEdit, SecretWrite } from "@workerstack/infra";
+
+export const edit: ConfigEdit = { pattern: 'siteKey: "STUB",', replacement: 'siteKey: "0x4AAAAAAAexample",' };
+export const secret: SecretWrite = { key: "TURNSTILE_SECRET_KEY", scope: "prod", value: "example-secret" };
+```
+
+Write each secret with `bun repo env set <key> --scope <scope>`.

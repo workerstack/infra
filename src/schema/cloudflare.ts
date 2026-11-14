@@ -1,5 +1,6 @@
 import type { EnvBindings } from "./bindings.ts";
 import type { CloudflareAccessEnv, CloudflareR2Credentials, CloudflareTurnstileEnv } from "./cloudflare-env.ts";
+import type { InfraScope } from "./infra.ts";
 import type { ZoneConfig, ZoneConfigInput } from "./zone.ts";
 
 /**
@@ -8,14 +9,14 @@ import type { ZoneConfig, ZoneConfigInput } from "./zone.ts";
  * `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`).
  */
 export type CloudflareConfigInput<B extends Record<string, EnvBindings> = Record<string, EnvBindings>> = {
-  /** Per-env CF Access config, keyed by env name (`dev` / `prod` / …). */
-  access?: Record<string, CloudflareAccessEnv>;
+  /** Per-env CF Access config, keyed by scope (`local` / `dev` / `prod`). */
+  access?: Partial<Record<InfraScope, CloudflareAccessEnv>>;
   /** Per-env worker binding set. */
   bindings?: B;
   /** R2 S3-API config (optional — only needed for direct S3 access). */
   r2?: CloudflareR2Credentials;
   /** Per-env Turnstile widget config. */
-  turnstile?: Record<string, CloudflareTurnstileEnv>;
+  turnstile?: Partial<Record<InfraScope, CloudflareTurnstileEnv>>;
   /** Zone-level config (DNS, WAF, SSL, cache …). */
   zone: ZoneConfigInput;
 };
@@ -25,9 +26,9 @@ export type CloudflareConfigInput<B extends Record<string, EnvBindings> = Record
  * defaults populated (`bindings` always defined, zone schema fully resolved).
  */
 export type CloudflareConfig = {
-  access?: Record<string, CloudflareAccessEnv> | undefined;
+  access?: Partial<Record<InfraScope, CloudflareAccessEnv>> | undefined;
   bindings: Record<string, EnvBindings>;
   r2?: CloudflareR2Credentials | undefined;
-  turnstile?: Record<string, CloudflareTurnstileEnv> | undefined;
+  turnstile?: Partial<Record<InfraScope, CloudflareTurnstileEnv>> | undefined;
   zone: ZoneConfig;
 };

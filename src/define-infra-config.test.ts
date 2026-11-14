@@ -5,7 +5,7 @@ import { defineInfraConfig } from "./define-infra-config.ts";
 import type { InfraEnv } from "./schema/infra.ts";
 import type { ZoneConfigInput } from "./schema/zone.ts";
 
-const env: InfraEnv = { global: {} };
+const env: InfraEnv = { dev: {}, global: {}, local: {}, prod: {} };
 
 const ZONE_ID = "0123456789abcdef0123456789abcdef";
 
@@ -124,9 +124,12 @@ it("keeps env as the same object", () => {
 
 it("defines without reading an env value", () => {
   const throwing: InfraEnv = {
+    dev: {},
     get global(): InfraEnv["global"] {
       throw new Error("read");
     },
+    local: {},
+    prod: {},
   };
 
   expect(defineInfraConfig({ env: throwing }).env).toBe(throwing);

@@ -1,4 +1,4 @@
-import type { InfraEnv } from "./schema/infra.ts";
+import type { InfraEnv, InfraScope } from "./schema/infra.ts";
 
 export type CloudflareCredentials = {
   readonly accountEmail: string;
@@ -27,4 +27,14 @@ export function cloudflareCredentials(env: InfraEnv): CloudflareCredentials {
     apiKey: requiredGlobal(env, "CLOUDFLARE_API_KEY"),
     apiToken: token === "" ? undefined : token,
   };
+}
+
+/** The scoped required-key reader: an empty or missing value in the scope's view throws the fix line. */
+export function requiredScoped(env: InfraEnv, scope: InfraScope, key: string): string {
+  const value = env[scope][key];
+
+  if (value === undefined || value === "")
+    throw new Error(`${key} has no ${scope} value; run bun repo env set ${key} --scope ${scope}`);
+
+  return value;
 }

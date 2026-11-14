@@ -5,12 +5,22 @@ import type { GoogleConfig } from "./google.ts";
 import type { LocalConfig } from "./local-config.ts";
 import type { MicrosoftConfig } from "./microsoft.ts";
 
+/** One deploy scope: the local stack, a dev deploy or a prod deploy. */
+export type InfraScope = "local" | "dev" | "prod";
+
+/** One scope's view of the env: string values by key. */
+type EnvView = Readonly<Record<string, string | undefined>>;
+
 /**
- * The product's env: any object with a `global` view of string values, such as a `defineEnv`
- * instance. Account credentials are read from `global` when a command runs, never at config load.
+ * The product's env: any object with `global`, `local`, `dev` and `prod` views of string values,
+ * such as a `defineEnv` instance. Credentials are read from a view when a command runs, never at
+ * config load.
  */
 export type InfraEnv = {
-  readonly global: Readonly<Record<string, string | undefined>>;
+  readonly dev: EnvView;
+  readonly global: EnvView;
+  readonly local: EnvView;
+  readonly prod: EnvView;
 };
 
 /**

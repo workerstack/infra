@@ -38,7 +38,7 @@ export default defineInfraConfig({
 });
 ```
 
-Write a sealed value with `bun repo env set CLOUDFLARE_API_KEY --scope global`. The `env` field is typed `InfraEnv`: any object with a `global` view of string values.
+Write a sealed value with `bun repo env set CLOUDFLARE_API_KEY --scope global`. The `env` field is typed `InfraEnv`: any object with `global`, `local`, `dev` and `prod` views of string values (`InfraScope` names the last three). A key read per scope, such as an Access secret, is missing when its view has no value: `ACCESS_GOOGLE_CLIENT_SECRET has no prod value; run bun repo env set ACCESS_GOOGLE_CLIENT_SECRET --scope prod`.
 
 ## Keys
 

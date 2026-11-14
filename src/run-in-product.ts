@@ -36,7 +36,7 @@ export async function runInProduct(run: ProductRun): Promise<number> {
     if (!selection.ok) throw new Error(selection.error);
 
     const [product] = selection.products;
-    const env = run.childEnv(product?.config.env ?? { global: {} });
+    const env = run.childEnv(product?.config.env ?? { dev: {}, global: {}, local: {}, prod: {} });
     const { args, file } = run.program(root);
 
     return await exitCode({ args, cwd: resolve(run.cwd), env, file });
