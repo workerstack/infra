@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "oxc.oxc-vscode",
-    "wdomitrz.simple-lsp-client"
+    "wdomitrz.simple-lsp-client",
+    "vitest.explorer"
   ]
 }

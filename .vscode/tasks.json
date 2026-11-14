@@ -2,9 +2,59 @@
 {
   "tasks": [
     {
+      "label": "ci",
+      "type": "shell",
+      "command": "bun run ci",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "fmt",
+      "type": "shell",
+      "command": "bun run fmt",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "bun run lint",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
       "label": "postinstall",
       "type": "shell",
       "command": "bun run postinstall",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "bun run test",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "typecheck",
+      "type": "shell",
+      "command": "bun run typecheck",
       "problemMatcher": [],
       "presentation": {
         "panel": "new",

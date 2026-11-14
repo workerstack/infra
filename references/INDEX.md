@@ -10,5 +10,6 @@
 - [@workerstack/testing](https://www.npmjs.com/package/@workerstack/testing): End-to-end matrix testing for APIs, web apps and Workers
 <!-- /repo:available -->
 
-<!-- repo:refs e3b0c442 -->
+<!-- repo:refs e05019bd -->
+- `install.md`: Install the package
 <!-- /repo:refs -->

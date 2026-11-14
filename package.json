@@ -1,11 +1,68 @@
 {
-  "private": true,
+  "name": "@workerstack/infra",
+  "version": "0.1.0-rc.0",
+  "private": false,
+  "description": "Cloudflare infrastructure as code for workerstack repos",
+  "keywords": [
+    "cloudflare",
+    "infrastructure-as-code",
+    "workers",
+    "workerstack"
+  ],
+  "homepage": "https://github.com/workerstack/infra#readme",
+  "bugs": {
+    "url": "https://github.com/workerstack/infra/issues"
+  },
+  "license": "MIT",
+  "author": "Lovro Žagar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/workerstack/infra.git"
+  },
+  "bin": {
+    "infra": "./bin/infra.ts"
+  },
+  "files": [
+    "bin",
+    "references",
+    "cli",
+    "!bin/**/*.test.ts",
+    "!cli/**/*.test.ts",
+    "!bin/**/__fixtures__",
+    "!cli/**/__fixtures__",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
   "sideEffects": false,
+  "exports": {
+    "./package.json": "./package.json",
+    "./references/*": "./references/*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "postinstall": "repo sync --postinstall"
+    "postinstall": "repo sync --postinstall",
+    "typecheck": "bun --bun tsc -p .",
+    "lint": "repo lint",
+    "fmt": "repo fmt",
+    "test": "bun --bun vitest run",
+    "ci": "repo ci"
   },
   "devDependencies": {
-    "@workerstack/repo": "0.2.0-rc.0"
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "@types/bun": "^1.4.4",
+    "@vitest/coverage-istanbul": "^5.1.0",
+    "@workerstack/repo": "0.2.0-rc.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.0"
+  },
+  "engines": {
+    "bun": ">=1.4.4"
   },
   "packageManager": "bun@1.4.4"
 }

@@ -1,8 +1,19 @@
-# repo:generated bb1b9969
+# repo:generated 7fefd929
 * text=auto eol=lf
 .githooks/commit-msg linguist-generated
 .githooks/pre-commit linguist-generated
 .githooks/pre-push linguist-generated
+.github/CODEOWNERS linguist-generated
+.github/ISSUE_TEMPLATE/bug_report.yml linguist-generated
+.github/ISSUE_TEMPLATE/config.yml linguist-generated
+.github/PULL_REQUEST_TEMPLATE.md linguist-generated
+.github/dependabot.yml linguist-generated
+.github/workflows/ci.yml linguist-generated
+.github/workflows/nightly.yml linguist-generated
+.github/workflows/release.yml linguist-generated
 .vscode/tasks.json linguist-generated
+CONTRIBUTING.md linguist-generated
+README.md linguist-generated
+SECURITY.md linguist-generated
 bunfig.toml linguist-generated
 # /repo:generated
