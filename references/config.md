@@ -1,0 +1,44 @@
+---
+description: Config and product discovery
+order: 20
+---
+
+# Config
+
+An `infra.config.ts` describes one product's infrastructure. It default-exports the result of `defineInfraConfig`, which checks the input and fills in defaults.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  cloudflare: {
+    accountEmail: "ops@example.com",
+    accountId: "fedcba9876543210fedcba9876543210",
+    globalApiKey: process.env.CLOUDFLARE_API_KEY ?? "",
+    zone: { domain: "example.com", zoneId: "0123456789abcdef0123456789abcdef" },
+  },
+  local: {
+    host: "example.localhost",
+    vars: (origin) => ({ APP_URL: origin.href }),
+  },
+});
+```
+
+## Products
+
+A product is one `infra.config.ts`. Its name is its directory relative to the repo root, or `.` at the root.
+
+`discoverProducts` finds every config under a root. `selectProducts` picks from them by target.
+
+```ts
+import { discoverProducts, selectProducts } from "@workerstack/infra";
+
+const root = process.cwd();
+const products = await discoverProducts(root);
+
+selectProducts(root, products, undefined); // the only product, else an error
+selectProducts(root, products, { all: true }); // every product
+selectProducts(root, products, { name: "apps/web" }); // one product by name
+```
+
+The result is `{ ok: true, products }` or `{ ok: false, error }`.

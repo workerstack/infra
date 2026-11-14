@@ -1,0 +1,22 @@
+{
+  // exclude replaces tsconfig.src.json's own: relist its entries, tests and fixtures
+  "compilerOptions": {
+    "declaration": true,
+    "noEmit": false,
+    "outDir": "dist",
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": "src"
+  },
+  "exclude": [
+    "node_modules",
+    ".tmp",
+    ".repo/scratch",
+    ".repo/tmp",
+    ".worktrees",
+    "dist",
+    "src/**/*.test.ts",
+    "src/**/__fixtures__/**"
+  ],
+  "extends": "./tsconfig.src.json",
+  "include": ["src/**/*.ts"]
+}

@@ -23,6 +23,7 @@
     "infra": "./bin/infra.ts"
   },
   "files": [
+    "dist",
     "bin",
     "references",
     "cli",
@@ -37,6 +38,10 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json",
     "./references/*": "./references/*"
   },
@@ -45,6 +50,8 @@
   },
   "scripts": {
     "postinstall": "repo sync --postinstall",
+    "build": "bun --bun tsc -p tsconfig.build.json",
+    "prepack": "bun run build",
     "typecheck": "bun --bun tsc -p .",
     "lint": "repo lint",
     "fmt": "repo fmt",
@@ -59,7 +66,13 @@
     "@vitest/coverage-istanbul": "^5.1.0",
     "@workerstack/repo": "0.2.0-rc.0",
     "typescript": "^5.9.3",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "wrangler": "4.152.0",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "wrangler": "4.152.0",
+    "zod": "^4.6.7"
   },
   "engines": {
     "bun": ">=1.4.4"

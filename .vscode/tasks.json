@@ -2,6 +2,16 @@
 {
   "tasks": [
     {
+      "label": "build",
+      "type": "shell",
+      "command": "bun run build",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
       "label": "ci",
       "type": "shell",
       "command": "bun run ci",
@@ -35,6 +45,16 @@
       "label": "postinstall",
       "type": "shell",
       "command": "bun run postinstall",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "prepack",
+      "type": "shell",
+      "command": "bun run prepack",
       "problemMatcher": [],
       "presentation": {
         "panel": "new",

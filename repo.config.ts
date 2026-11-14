@@ -3,7 +3,7 @@ import { defineConfig } from "@workerstack/repo";
 export default defineConfig({
   packs: ["agents", "standards", "docs", "release"],
   owner: { github: "lovrozagar", name: "Lovro Žagar" },
-  coverage: { mutate: ["bin/**/*.ts", "cli/**/*.ts"] },
+  coverage: { mutate: ["bin/**/*.ts", "cli/**/*.ts", "src/**/*.ts"] },
   agents: {
     defaultApproval: "away",
     defaultEffort: "fast",
