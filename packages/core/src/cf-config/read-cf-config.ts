@@ -2,11 +2,13 @@ import { pathToFileURL } from "node:url";
 
 import { convertToWranglerConfig, resolveAndParseConfig } from "@cloudflare/config";
 
+import type { WorkerBuild } from "../cf-kit/worker-build.ts";
 import type { InfraScope } from "../schema/infra.ts";
+import { buildOf } from "./build-of.ts";
 import type { CfConfig } from "./cf-config.ts";
 import { jsonObjectSchema } from "./json-object-schema.ts";
 
-type ConfigModule = { default?: Parameters<typeof resolveAndParseConfig>[0] };
+type ConfigModule = { default?: Partial<WorkerBuild> };
 
 /**
  * The Worker a `cloudflare.config.ts` declares for `scope`, parsed by Cloudflare's schema and converted to a
@@ -33,7 +35,7 @@ export async function readCfConfig(file: string, scope: InfraScope): Promise<CfC
 
     const wrangler = jsonObjectSchema().parse(convertToWranglerConfig(result.data));
 
-    return { worker: result.data.worker, wrangler };
+    return { build: buildOf(loaded.default, scope), worker: result.data.worker, wrangler };
   } catch (error) {
     throw new Error(`${file}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
   }

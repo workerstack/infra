@@ -17,6 +17,7 @@ import type {
 import type { InfraScope } from "../schema/infra.ts";
 import type { BindingNames, EnvKeyRef, KeyPick, QueueConsumerSpec, RatelimitSpec } from "./cf-kit-types.ts";
 import type { ALLOCATE_RATELIMITS, CF_KIT, PRODUCT_ROOT } from "./cf-kit.constants.ts";
+import type { WorkerBuild } from "./worker-build.ts";
 import type { WorkerOptions } from "./worker-options.ts";
 
 /**
@@ -103,9 +104,13 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
   /**
    * A Worker's whole config from its base name and the names of what it binds: what `defineConfig` of `cf/config`
    * takes, so a `cloudflare.config.ts` default-exports it as is. Built per mode: the defaults, the scoped name, each
-   * binding kind, the routes, then `extra(scope)`.
+   * binding kind, the routes, then `extra(scope)`. The options may be a function of the scope, for a route or binding
+   * of one scope. Its build settings (`minify`, `uploadSourceMaps`, `assetsDirectory`) ride on the returned function.
    */
-  worker(base: string, options: WorkerOptions<K>): (context: { mode?: string }) => { worker: WorkerConfig };
+  worker(
+    base: string,
+    options: WorkerOptions<K> | ((scope: InfraScope) => WorkerOptions<K>),
+  ): ((context: { mode?: string }) => { worker: WorkerConfig }) & WorkerBuild;
   /** The product's Cloudflare zone (`acme.ai`), when its infra has one. */
   readonly zoneDomain: string | undefined;
 };

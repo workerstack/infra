@@ -1,6 +1,8 @@
 import type { WorkerConfig } from "@cloudflare/config";
 
+import type { BundlerSettings } from "../cf-config/bundler-settings.ts";
 import type { InfraScope } from "../schema/infra.ts";
+import { WORKER_BUILD } from "./cf-kit.constants.ts";
 import type { CfKit } from "./cf-kit.ts";
 import type { WorkerOptions } from "./worker-options.ts";
 
@@ -66,11 +68,30 @@ function workerOf(built: Built): WorkerConfig {
   } /* the date is checked by Cloudflare's schema */ as WorkerConfig;
 }
 
+// The build settings the options set; a key left out stays out, so gen sees only what the author wrote.
+function buildOf({ assetsDirectory, minify, uploadSourceMaps }: WorkerOptions): BundlerSettings {
+  return {
+    ...(assetsDirectory !== undefined && { assetsDirectory }),
+    ...(minify !== undefined && { minify }),
+    ...(uploadSourceMaps !== undefined && { uploadSourceMaps }),
+  };
+}
+
+function optionsOf(options: Parameters<CfKit["worker"]>[1], scope: InfraScope): WorkerOptions {
+  return "entrypoint" in options ? options : options(scope);
+}
+
 /** A Worker's whole `cloudflare.config.ts` from one call, built per mode from the rest of the kit. */
 export function workerShorthand(kit: Base): Pick<CfKit, "worker"> {
   return {
-    worker:
-      (base, options) =>
-      ({ mode }) => ({ worker: workerOf({ base, kit, options, scope: kit.scope(mode) }) }),
+    worker: (base, options) =>
+      Object.assign(
+        ({ mode }: { mode?: string }) => {
+          const scope = kit.scope(mode);
+
+          return { worker: workerOf({ base, kit, options: optionsOf(options, scope), scope }) };
+        },
+        { [WORKER_BUILD]: (scope: InfraScope) => buildOf(optionsOf(options, scope)) } as const,
+      ),
   };
 }

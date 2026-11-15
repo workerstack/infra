@@ -31,7 +31,7 @@ function bundlerKeys(dir: string, wrangler: JsonObject, settings: BundlerSetting
     ...(settings.assetsDirectory !== undefined && {
       assets: { ...assets, directory: resolve(dir, settings.assetsDirectory) },
     }),
-    ...(settings.minify !== undefined && { minify: settings.minify }),
+    minify: settings.minify ?? true,
     ...(settings.uploadSourceMaps !== undefined && { upload_source_maps: settings.uploadSourceMaps }),
   };
 }

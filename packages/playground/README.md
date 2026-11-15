@@ -12,6 +12,6 @@ It consumes the package the way a product does: `workspace:*`, imports through t
 
 `bun run loc` serves the Worker behind the local edge on `playground.localhost` (port 80, or a free port when 80 is taken; the output prints the URL). Ctrl-C stops it and removes `.wrangler/loc/stack.json`.
 
-The product's files: `web.env.ts` (the `defineEnv` env with plain fake values, no sealed key), `infra.config.ts` (zone, that env, local host; its default export is the config and the kit in one value), `api/` (the Worker: `cloudflare.config.ts`, `wrangler.config.ts`, `src/api.worker.ts`). `.cloudflare/`, `.dev.vars*` and `.wrangler/` are generated and gitignored.
+The product's files: `web.env.ts` (the `defineEnv` env with plain fake values, no sealed key), `infra.config.ts` (zone, that env, local host; its default export is the config and the kit in one value), `api/` (the Worker: `cloudflare.config.ts`, the one config file, and `src/api.worker.ts`). `.cloudflare/`, `.dev.vars*` and `.wrangler/` are generated and gitignored.
 
 `infra get`, `set`, `deploy` and `logs` talk to a real account, so they need real credentials in the env's `global` block and a real zone id. This product has neither. See `packages/core/references/commands.md`.

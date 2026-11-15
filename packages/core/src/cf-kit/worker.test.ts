@@ -90,3 +90,43 @@ it("merges extra last: its env beside the shorthand's, its triggers after the ro
   expect(worker.observability).toStrictEqual({ enabled: true });
   expect(worker.name).toBe("web-api-dev");
 });
+
+it("calls a scope callback per scope, so routes can differ by scope", () => {
+  const seen: string[] = [];
+
+  const config = infra.worker("web-api", (scope) => {
+    seen.push(scope);
+
+    return {
+      compatibilityDate: "2026-01-20",
+      entrypoint: "./src/index.ts",
+      ...(scope === "prod" ? { routes: ["example.com/api/*"] } : {}),
+    };
+  });
+
+  const prod = config({ mode: "prod" }).worker;
+  const dev = config({ mode: "dev" }).worker;
+
+  expect(seen).toContain("prod");
+  expect(seen).toContain("dev");
+  expect(prod.triggers).toStrictEqual(infra.routes(["example.com/api/*"], "example.com"));
+  expect(dev.triggers).toBeUndefined();
+  expect(prod.name).toBe("web-api-prod");
+  expect(dev.name).toBe("web-api-dev");
+});
+
+it("takes the build keys in its options without putting them in the Cloudflare worker", async () => {
+  const config = infra.worker("web-api", {
+    assetsDirectory: "./assets",
+    compatibilityDate: "2026-01-20",
+    entrypoint: "./src/index.ts",
+    minify: false,
+    uploadSourceMaps: true,
+  });
+
+  const { worker } = await parsed(config, "dev");
+
+  expect(worker).not.toHaveProperty("minify");
+  expect(worker).not.toHaveProperty("uploadSourceMaps");
+  expect(worker).not.toHaveProperty("assetsDirectory");
+});

@@ -44,3 +44,10 @@ export const NO_REGISTRY_MESSAGE =
  * `CF_KIT`.
  */
 export const ENV_KEY_REF: unique symbol = /* @__PURE__ */ Symbol.for("@workerstack/infra/env-key-ref");
+
+/**
+ * Where the function `infra.worker` returns carries its build settings (`minify`, `uploadSourceMaps`,
+ * `assetsDirectory`) as a function of the scope, since Cloudflare's `WorkerConfig` has no key for them. `infra gen`
+ * reads it beside the module's default export. A registered symbol, like `CF_KIT`.
+ */
+export const WORKER_BUILD: unique symbol = /* @__PURE__ */ Symbol.for("@workerstack/infra/worker-build");

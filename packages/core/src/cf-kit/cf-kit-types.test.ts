@@ -83,6 +83,12 @@ function rejected() {
 
   // @ts-expect-error the string form is gone
   kit.worker("w", { entrypoint: "./src/index.ts", vars: names });
+  // @ts-expect-error NOPE is no key of the env's views, inside the scope callback too
+  kit.worker("w", () => ({ entrypoint: "./src/index.ts", vars: (e) => none(e.NOPE) }));
+  // @ts-expect-error NOPE is no d1 binding of the config, inside the scope callback too
+  kit.worker("w", () => ({ d1: ["NOPE"], entrypoint: "./src/index.ts" }));
+  // @ts-expect-error minify is a boolean
+  kit.worker("w", { entrypoint: "./src/index.ts", minify: "yes" });
 }
 
 it("rejects a name the config or env does not declare", () => {
@@ -138,4 +144,24 @@ it("offers every key of a plain-object env in both maps", () => {
   expectTypeOf(open).returns.toHaveProperty("vars");
   expectTypeOf<ReturnType<typeof open>["secrets"]>().toHaveProperty("TOKEN");
   expectTypeOf<ReturnType<typeof open>["vars"]>().toHaveProperty("GREETING");
+});
+
+function built() {
+  return [
+    kit.worker("w", {
+      assetsDirectory: "./assets",
+      entrypoint: "./src/index.ts",
+      minify: false,
+      uploadSourceMaps: true,
+    }),
+    kit.worker("w", (scope) => ({
+      entrypoint: "./src/index.ts",
+      vars: (e) => [e.GREETING],
+      ...(scope === "prod" ? { routes: ["acme.ai/*"] } : {}),
+    })),
+  ];
+}
+
+it("accepts the build keys and a scope callback", () => {
+  expectTypeOf(built).toBeFunction();
 });

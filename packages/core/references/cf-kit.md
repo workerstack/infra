@@ -36,14 +36,15 @@ export default infra.worker("api", {
 });
 ```
 
-`infra.worker(base, options)` returns what `defineConfig` of `cf/config` takes, so the file default-exports it with no wrapper (`defineConfig(infra.worker(...))` works too). Per `--mode` it builds `...infra.defaults`, the scoped name (`api-dev`), each binding kind from its names and the routes, then merges `extra(scope)`:
+`infra.worker(base, options)` (`options` may be `(scope) => options`, called per scope, so a prod-only route or binding stays in the short form) returns what `defineConfig` of `cf/config` takes, so the file default-exports it with no wrapper (`defineConfig(infra.worker(...))` works too). Per `--mode` it builds `...infra.defaults`, the scoped name (`api-dev`), each binding kind from its names and the routes, then merges `extra(scope)`:
 
 - `d1`, `kv`, `r2`, `queue`, `aiSearch`, `analytics`, `secrets`, `vars` and `ratelimits` take what the kit's method of that name takes; `services` maps a binding to a target Worker's base name. `vars` unset means no vars, not even `ENVIRONMENT`.
 - `routes` land on the config's zone; `zone` overrides it. Routes with no zone fail naming the Worker.
 - `entrypoint` names the Worker module. Name it `*.worker.ts`: @workerstack/repo treats that file and every `*.config.ts` as loaded by a tool, so knip needs no ignore and the default export needs no lint skip.
+- `minify`, `uploadSourceMaps` and `assetsDirectory` are the build settings `infra gen` writes to Wrangler as `minify`, `upload_source_maps` and `assets.directory` (resolved against the package). `minify` is `true` for every Worker unless it is set to `false`. They ride on the returned function, not in the Cloudflare config, so a package whose `infra.worker` sets one and that also has a `wrangler.config.ts` fails gen naming both files.
 - `extra(scope)` is merged last, for anything the shorthand does not cover: its `env` beside the shorthand's bindings, its `triggers` after the routes, any other key over the rest.
 
-The long form still works, for what `extra` cannot say (a container, routes in one scope only): the same methods by hand.
+The long form still works, for what `extra` cannot say (a container, say): the same methods by hand. A long-form package keeps its build settings in `wrangler.config.ts` (`defineWranglerConfig({ minify: false })`, `minify` still defaulting to `true`), because Cloudflare's `WorkerConfig` has no `minify` key to carry them.
 
 ```text
 export default defineConfig(({ mode }) => {
