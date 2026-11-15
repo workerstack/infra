@@ -4,11 +4,11 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { alive, groupPids, shellGroups, until } from "./__fixtures__/process-probes.ts";
+import { SLEEP, abandoning, alive, groupPids, nodeGroups, parentOf, until } from "./__fixtures__/process-probes.ts";
 import { clearOrphans } from "./clear-orphans.ts";
 import { writeLock } from "./write-lock.ts";
 
-const { start, stopStarted } = shellGroups();
+const { start, stopStarted } = nodeGroups();
 const dirs: string[] = [];
 
 afterEach(async () => {
@@ -28,14 +28,14 @@ function lockFile(): string {
 describe("orphans of a live leader", () => {
   it("stops a recorded group whose command line still matches, and spares a pid that changed hands", async () => {
     const lock = lockFile();
-    const orphan = await start("orphan", "sleep 1000 & sleep 1000");
-    const stranger = await start("stranger", "sleep 1001");
+    const orphan = await start("orphan", parentOf(parentOf(SLEEP)));
+    const stranger = await start("stranger", SLEEP);
 
     await until(() => groupPids(orphan.pgid).length === 3);
 
     const orphanPids = groupPids(orphan.pgid);
 
-    writeLock(lock, [orphan, { ...stranger, cmdline: "sh -c something else" }]);
+    writeLock(lock, [orphan, { ...stranger, cmdline: "node -e something else" }]);
     await clearOrphans(lock);
 
     expect(orphanPids.filter((pid) => alive(pid))).toStrictEqual([]);
@@ -47,7 +47,7 @@ describe("orphans of a live leader", () => {
 describe("orphans of a gone leader", () => {
   it("stops what a group whose leader exited left running", async () => {
     const lock = lockFile();
-    const leader = await start("leader", "sleep 1000 >/dev/null 2>&1 & exit 0");
+    const leader = await start("leader", abandoning(SLEEP));
 
     await leader.exited;
 

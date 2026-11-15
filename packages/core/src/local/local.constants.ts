@@ -132,3 +132,9 @@ export const LINE_BREAK: RegExp = /\r?\n/;
 
 /** `ps` prints lstart with English month and day names only in the C locale. */
 export const PS_LOCALE = "C";
+
+/** The platform names the process probes branch on. */
+export const LINUX: NodeJS.Platform = "linux";
+
+/** See LINUX. */
+export const WIN32: NodeJS.Platform = "win32";

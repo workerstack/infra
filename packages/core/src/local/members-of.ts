@@ -1,3 +1,4 @@
+import { WIN32 } from "./local.constants.ts";
 import type { ProcessRow } from "./process-row.ts";
 
 // Children by parent links, each started no earlier than its parent: a pid reused later cannot close a cycle.
@@ -22,7 +23,7 @@ export function membersOf(
   leader: number,
   platform: NodeJS.Platform = process.platform,
 ): ProcessRow[] {
-  if (platform !== "win32") return rows.filter((row) => row.group === leader);
+  if (platform !== WIN32) return rows.filter((row) => row.group === leader);
 
   const root = rows.find((row) => row.pid === leader);
 

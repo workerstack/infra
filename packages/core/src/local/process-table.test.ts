@@ -43,6 +43,14 @@ describe("parsePs", () => {
     expect(parsePs(`${text.join("\n")}\n`).map((row) => row.pid)).toStrictEqual([1, 77]);
   });
 
+  it("keeps a command line longer than 200 characters whole", () => {
+    const command = `node ${"a/".repeat(150)}main.js --flag`;
+    const line = `  412   400   399 Sun Nov 15 22:00:00 2026 ${command}`;
+
+    expect(command.length).toBeGreaterThan(200);
+    expect(parsePs(line)[0]?.cmdline).toBe(command);
+  });
+
   it("is empty for empty output", () => {
     expect(parsePs("")).toStrictEqual([]);
     expect(parsePs("\n")).toStrictEqual([]);
@@ -138,20 +146,29 @@ describe("parseOwnerPids", () => {
   });
 });
 
+// This process as /proc shows it; read only where /proc exists.
+function ownProc() {
+  const stat = readFileSync("/proc/self/stat", "utf8");
+
+  const fields = stat
+    .slice(stat.lastIndexOf(")") + 2)
+    .split(" ")
+    .map(Number);
+
+  return {
+    cmdline: readFileSync("/proc/self/cmdline", "utf8").replace(/\0$/, "").split("\0").join(" "),
+    group: fields[2],
+    parent: fields[1],
+  };
+}
+
 describe("the table on linux", () => {
-  const stat = readFileSync("/proc/self/stat", "utf8").slice(
-    readFileSync("/proc/self/stat", "utf8").lastIndexOf(")") + 2,
-  );
-
-  const [, parent, group] = stat.split(" ").map(Number);
-  const cmdline = readFileSync("/proc/self/cmdline", "utf8").replace(/\0$/, "").split("\0").join(" ");
-
   it.runIf(process.platform === "linux")("lists this process with its group, parent and space-joined command", () => {
-    expect(readProcessTable().find((row) => row.pid === process.pid)).toMatchObject({ cmdline, group, parent });
+    expect(readProcessTable().find((row) => row.pid === process.pid)).toMatchObject(ownProc());
   });
 
   it.runIf(process.platform === "linux")("reads one process alone, and none once it is gone", () => {
-    expect(processOf(process.pid)).toMatchObject({ cmdline, group, parent });
+    expect(processOf(process.pid)).toMatchObject(ownProc());
     expect(processOf(2 ** 22 + 1)).toBeUndefined();
   });
 });

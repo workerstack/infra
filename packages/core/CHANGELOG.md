@@ -31,3 +31,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `infra loc` reads processes and ports on macOS and Windows too, so a stale lock no longer crashes startup there and a busy port names its owner; a stack is stopped with `taskkill /T` on Windows.
 - `infra` starts `cf`, `wrangler` and the other peer tools under the runtime their bin names, so they start on Windows, where a bin file cannot be spawned itself.
+- On macOS, `infra loc` reads full process command lines, so a stale stack started from a long command still matches its lock and is cleared.

@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { alive, groupPids, shellGroups, until } from "./__fixtures__/process-probes.ts";
+import { SLEEP, alive, groupPids, nodeGroups, parentOf, reportedLine, until } from "./__fixtures__/process-probes.ts";
 import { execedCmdline } from "./execed-cmdline.ts";
 import { stopGroups } from "./stop-groups.ts";
 
-const { start, stopStarted } = shellGroups();
+const { start, stopStarted } = nodeGroups();
 
 afterEach(stopStarted);
 
@@ -33,24 +33,23 @@ describe("a child's recorded command line", () => {
 
 describe("child process groups", () => {
   it("reports a child's exit with its last lines", async () => {
-    const child = await start("fails", "echo one; echo two; exit 3");
+    const child = await start("fails", 'console.log("one"); console.log("two"); process.exit(3)');
 
     await expect(child.exited).resolves.toStrictEqual({ code: 3, signal: null });
     expect(child.lastLines()).toStrictEqual(["one", "two"]);
   });
 
   it("leads its own process group and records its command line", async () => {
-    // A second command keeps sh from exec'ing into sleep, so the recorded line is sh's.
-    const child = await start("sleeper", "sleep 1000; true");
+    const child = await start("sleeper", SLEEP);
 
     expect(child.pgid).toBe(child.pid);
-    expect(child.cmdline).toBe("sh -c sleep 1000; true");
+    expect(child.cmdline).toBe(reportedLine(SLEEP));
   });
 
   it("stops a child and its grandchild", async () => {
-    const child = await start("parent", "sleep 1000 & sleep 1000");
+    const child = await start("parent", parentOf(parentOf(SLEEP)));
 
-    // sh, and a sleep in the background and one in the foreground.
+    // The child, its child and its grandchild.
     await until(() => groupPids(child.pgid).length === 3);
 
     const pids = groupPids(child.pgid);
@@ -63,7 +62,7 @@ describe("child process groups", () => {
   });
 
   it("kills a group that ignores SIGTERM once the grace period ends", async () => {
-    const child = await start("stubborn", "trap '' TERM; while true; do sleep 0.05; done");
+    const child = await start("stubborn", 'process.on("SIGTERM", () => {}); setInterval(() => {}, 50)');
 
     await stopGroups([child], 200);
 
