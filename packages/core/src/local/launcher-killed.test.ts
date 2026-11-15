@@ -6,7 +6,7 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { fixtureOptions, fixtureProduct, removeRoot, tempRoot } from "./__fixtures__/launcher-fixture.ts";
 import { ask, textOf, lockFileOf, seen } from "./__fixtures__/launcher-probes.ts";
-import { alive, until } from "./__fixtures__/process-probes.ts";
+import { until } from "./__fixtures__/process-probes.ts";
 import { type LockedChild, lockSchema } from "./locked-child.ts";
 import { processOf } from "./process-of.ts";
 import type { ProcessRow } from "./process-row.ts";
@@ -44,9 +44,14 @@ async function killedRun(): Promise<LockedChild[]> {
   return lock.children;
 }
 
-// Each locked child still alive, with the row it has now: a mismatch with the lock shows why it was spared.
-function stillAlive(children: readonly LockedChild[]): { locked: LockedChild; now: ProcessRow | undefined }[] {
-  return children.filter((child) => alive(child.pid)).map((child) => ({ locked: child, now: processOf(child.pid) }));
+// Each locked child that is still the same process, by its pid and start time (Windows soon hands a freed pid to a
+// new process), with the row it has now, so a failure shows why it was spared.
+function stillAlive(children: readonly LockedChild[]): { locked: LockedChild; now: ProcessRow }[] {
+  return children.flatMap((child) => {
+    const now = processOf(child.pid);
+
+    return now !== undefined && now.start === child.start ? [{ locked: child, now }] : [];
+  });
 }
 
 describe("a stack after its launcher is killed", () => {
