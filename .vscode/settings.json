@@ -68,14 +68,9 @@
     ".githooks/commit-msg": true,
     ".githooks/pre-commit": true,
     ".githooks/pre-push": true,
-    ".github/CODEOWNERS": true,
-    ".github/ISSUE_TEMPLATE/bug_report.yml": true,
-    ".github/ISSUE_TEMPLATE/config.yml": true,
-    ".github/PULL_REQUEST_TEMPLATE.md": true,
     ".github/dependabot.yml": true,
     ".github/workflows/ci.yml": true,
     ".github/workflows/nightly.yml": true,
-    ".github/workflows/release.yml": true,
     ".grok/agents/implementer-deep.md": true,
     ".grok/agents/implementer-fast.md": true,
     ".grok/agents/orchestrator.md": true,
@@ -90,10 +85,9 @@
     ".oxlintrc.jsonc": true,
     ".repo/.gitkeep": true,
     ".vscode/tasks.json": true,
-    "CONTRIBUTING.md": true,
-    "README.md": true,
-    "SECURITY.md": true,
     "bunfig.toml": true,
-    "knip.jsonc": true
+    "knip.jsonc": true,
+    "packages/core/README.md": true,
+    "packages/core/bunfig.toml": true
   }
 }

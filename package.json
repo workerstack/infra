@@ -1,93 +1,26 @@
 {
-  "name": "@workerstack/infra",
-  "version": "0.1.0-rc.0",
-  "private": false,
-  "description": "Cloudflare infrastructure as code for workerstack repos",
-  "keywords": [
-    "cloudflare",
-    "infrastructure-as-code",
-    "workers",
-    "workerstack"
-  ],
-  "homepage": "https://github.com/workerstack/infra#readme",
-  "bugs": {
-    "url": "https://github.com/workerstack/infra/issues"
+  "name": "workerstack-infra",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
   },
-  "license": "MIT",
-  "author": "Lovro Žagar",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/workerstack/infra.git"
-  },
-  "bin": {
-    "infra": "./bin/infra.ts"
-  },
-  "files": [
-    "dist",
-    "bin",
-    "references",
-    "cli",
-    "src",
-    "!src/**/*.test.ts",
-    "!src/**/__fixtures__",
-    "!bin/**/*.test.ts",
-    "!cli/**/*.test.ts",
-    "!bin/**/__fixtures__",
-    "!cli/**/__fixtures__",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ],
   "type": "module",
-  "sideEffects": false,
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./local": {
-      "types": "./dist/local.d.ts",
-      "default": "./dist/local.js"
-    },
-    "./package.json": "./package.json",
-    "./references/*": "./references/*"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
+    "build": "bun run --filter '*' build",
     "postinstall": "repo sync --postinstall",
-    "build": "bun --bun tsc -p tsconfig.build.json",
-    "prepack": "bun run build",
-    "typecheck": "bun --bun tsc -p .",
     "lint": "repo lint",
     "fmt": "repo fmt",
-    "test": "bun --bun vitest run",
+    "test": "bun run --filter '*' test",
+    "typecheck": "bun run --filter '*' typecheck",
     "ci": "repo ci"
   },
   "devDependencies": {
-    "@cloudflare/config": "0.30.2",
     "@stryker-mutator/core": "10.1.1",
     "@stryker-mutator/vitest-runner": "10.1.1",
-    "@total-typescript/ts-reset": "^0.6.1",
-    "@types/bun": "^1.4.4",
-    "@vitest/coverage-istanbul": "^5.1.0",
     "@workerstack/repo": "0.2.0-rc.0",
-    "typescript": "^5.9.3",
-    "vitest": "^5.1.0",
-    "wrangler": "4.152.0",
-    "zod": "^4.6.7"
-  },
-  "peerDependencies": {
-    "@cloudflare/config": "0.30.2",
-    "@workerstack/database": "^0.24.0",
-    "@workerstack/repo": "0.2.0-rc.0",
-    "cf": "1.0.0-beta.28",
-    "wrangler": "4.152.0",
-    "zod": "^4.6.7"
-  },
-  "engines": {
-    "bun": ">=1.4.4"
+    "typescript": "^5.9.3"
   },
   "packageManager": "bun@1.4.4"
 }

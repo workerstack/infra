@@ -1,5 +1,0 @@
-{
-  "exclude": ["node_modules", ".tmp", ".repo/scratch", ".repo/tmp", ".worktrees", "dist"],
-  "extends": "@workerstack/repo/tsconfig/bun",
-  "include": ["**/*.ts", "**/*.mts"]
-}

@@ -1,0 +1,87 @@
+{
+  "name": "@workerstack/infra",
+  "version": "0.1.0-rc.0",
+  "private": false,
+  "description": "Cloudflare infrastructure as code for workerstack repos",
+  "keywords": [
+    "cloudflare",
+    "infrastructure-as-code",
+    "workers",
+    "workerstack"
+  ],
+  "homepage": "https://github.com/workerstack/infra/tree/main/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/workerstack/infra/issues"
+  },
+  "license": "MIT",
+  "author": "Lovro Žagar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/workerstack/infra.git",
+    "directory": "packages/core"
+  },
+  "bin": {
+    "infra": "./bin/infra.ts"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "references",
+    "cli",
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/__fixtures__",
+    "!bin/**/*.test.ts",
+    "!cli/**/*.test.ts",
+    "!bin/**/__fixtures__",
+    "!cli/**/__fixtures__",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./local": {
+      "types": "./dist/local.d.ts",
+      "default": "./dist/local.js"
+    },
+    "./package.json": "./package.json",
+    "./references/*": "./references/*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun --bun tsc -p tsconfig.build.json",
+    "prepack": "bun run build",
+    "typecheck": "bun --bun tsc -p .",
+    "test": "bun --bun vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/config": "0.30.2",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "@types/bun": "^1.4.4",
+    "@vitest/coverage-istanbul": "^5.1.0",
+    "@workerstack/repo": "0.2.0-rc.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.0",
+    "wrangler": "4.152.0",
+    "zod": "^4.6.7"
+  },
+  "peerDependencies": {
+    "@cloudflare/config": "0.30.2",
+    "@workerstack/database": "^0.24.0",
+    "@workerstack/repo": "0.2.0-rc.0",
+    "cf": "1.0.0-beta.28",
+    "wrangler": "4.152.0",
+    "zod": "^4.6.7"
+  },
+  "engines": {
+    "bun": ">=1.4.4"
+  }
+}

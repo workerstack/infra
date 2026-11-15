@@ -1,0 +1,4 @@
+{
+  // The compiler setup every tsconfig of the repo extends: the root's and each package's.
+  "extends": "@workerstack/repo/tsconfig/bun"
+}

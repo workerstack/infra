@@ -1,0 +1,5 @@
+{
+  // exclude replaces tsconfig.json's own: its entries, then the tests and their helpers
+  "exclude": ["node_modules", ".tmp", "dist", "**/*.test.ts", "**/__fixtures__/**", "*.config.ts"],
+  "extends": ["./tsconfig.json", "@workerstack/repo/tsconfig/strict"]
+}

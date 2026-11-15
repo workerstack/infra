@@ -52,16 +52,6 @@
       }
     },
     {
-      "label": "prepack",
-      "type": "shell",
-      "command": "bun run prepack",
-      "problemMatcher": [],
-      "presentation": {
-        "panel": "new",
-        "reveal": "always"
-      }
-    },
-    {
       "label": "test",
       "type": "shell",
       "command": "bun run test",
@@ -75,6 +65,58 @@
       "label": "typecheck",
       "type": "shell",
       "command": "bun run typecheck",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "workerstack:infra:build",
+      "type": "shell",
+      "command": "bun run build",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/core"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "workerstack:infra:prepack",
+      "type": "shell",
+      "command": "bun run prepack",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/core"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "workerstack:infra:test",
+      "type": "shell",
+      "command": "bun run test",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/core"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "workerstack:infra:typecheck",
+      "type": "shell",
+      "command": "bun run typecheck",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/core"
+      },
       "problemMatcher": [],
       "presentation": {
         "panel": "new",

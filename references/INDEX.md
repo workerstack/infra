@@ -1,5 +1,9 @@
 # References
 
+<!-- repo:packages 789eb251 -->
+- [@workerstack/infra](../packages/core/references/INDEX.md): References
+<!-- /repo:packages -->
+
 <!-- repo:stack 67f979b7 -->
 - [@workerstack/repo](../node_modules/@workerstack/repo/references/INDEX.md)
 <!-- /repo:stack -->
@@ -9,11 +13,5 @@
 - [@workerstack/testing](https://www.npmjs.com/package/@workerstack/testing): End-to-end matrix testing for APIs, web apps and Workers
 <!-- /repo:available -->
 
-<!-- repo:refs c9a32a93 -->
-- `install.md`: Install the package
-- `config.md`: Config and product discovery
-- `credentials.md`: Credentials from defineEnv
-- `api.md`: Cloudflare API client
-- `commands.md`: Product and Worker commands
-- `cf-kit.md`: Worker configs from one env
+<!-- repo:refs e3b0c442 -->
 <!-- /repo:refs -->

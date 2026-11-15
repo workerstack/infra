@@ -7,16 +7,7 @@
     "rewriteRelativeImportExtensions": true,
     "rootDir": "src"
   },
-  "exclude": [
-    "node_modules",
-    ".tmp",
-    ".repo/scratch",
-    ".repo/tmp",
-    ".worktrees",
-    "dist",
-    "src/**/*.test.ts",
-    "src/**/__fixtures__/**"
-  ],
+  "exclude": ["node_modules", ".tmp", "dist", "src/**/*.test.ts", "src/**/__fixtures__/**"],
   "extends": "./tsconfig.src.json",
   "include": ["src/**/*.ts"]
 }
