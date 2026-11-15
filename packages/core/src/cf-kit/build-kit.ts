@@ -13,6 +13,7 @@ import { secretValues } from "./secret-values.ts";
 import { storageBindings } from "./storage-bindings.ts";
 import { varBindings } from "./var-bindings.ts";
 import { workerLinks } from "./worker-links.ts";
+import { workerShorthand } from "./worker-shorthand.ts";
 
 /**
  * The kit of a parsed config, from its `cloudflare.workers`: the one place every Worker's `cloudflare.config.ts` gets
@@ -25,7 +26,7 @@ export function buildKit(config: InfraConfig): CfKit {
   const allocation = ratelimitAllocation();
   const registry = ratelimitRegistry(workers.ratelimitIds);
 
-  return {
+  const kit: Omit<CfKit, "worker"> = {
     [CF_KIT]: true,
     ...allocation.toggle,
     ...registry,
@@ -41,4 +42,6 @@ export function buildKit(config: InfraConfig): CfKit {
     ...varBindings(context),
     defaults: workers.defaults ?? {},
   };
+
+  return { ...kit, ...workerShorthand(kit) };
 }

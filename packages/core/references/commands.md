@@ -23,7 +23,7 @@ $ infra gen web --check
 | `infra set`     | Provisions bindings, Access and AI Search, applies the zone and its redirects, then applies Google, Apple and Microsoft.            |
 | `infra zone-get`| Reports the zone: rules, drift, declared bindings, R2, AI Search and Turnstile.                                   |
 | `infra zone-set`| Applies the zone settings and the generated zone and locale redirects only.                                      |
-| `infra gen`     | Writes each Worker package's `.cloudflare/wrangler.<scope>.json` and `.dev.vars.<scope>`. `--check` writes nothing and fails on drift. |
+| `infra gen`     | Writes each Worker package's `.cloudflare/wrangler.<scope>.json` and `.dev.vars.<scope>`, and the `database.migrate.config.ts` beside each D1 migrations dir whose `migrations` names a `database`. `--check` writes nothing and fails on drift. |
 | `infra db-migrate` | Applies each D1 binding's migrations with `database migrate apply`. `--scope dev\|prod`, `prod` by default. |
 | `infra db-wipe` | Empties each D1 binding's tables in a scope. `--scope dev\|prod` is required. |
 

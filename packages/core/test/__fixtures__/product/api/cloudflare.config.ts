@@ -1,26 +1,14 @@
-import { defineConfig } from "cf/config";
-
 import infra from "../infra.config.ts";
 
 const LIMIT = 5;
 const PERIOD = 60;
 
-export default defineConfig(({ mode }) => {
-  const scope = infra.scope(mode);
-
-  return {
-    worker: {
-      ...infra.defaults,
-      compatibilityDate: "2026-01-20",
-      entrypoint: "./src/index.ts",
-      env: {
-        ...infra.d1(scope, "DB"),
-        ...infra.ratelimits("web-api", scope, { name: "LIMIT_5", simple: { limit: LIMIT, period: PERIOD } }),
-        ...infra.secrets("API_KEY"),
-        ...infra.vars(scope, "GREETING", "SITE_URL"),
-      },
-      name: infra.name("web-api", scope),
-      triggers: infra.routes(["example.com/api/*"], "example.com"),
-    },
-  };
+export default infra.worker("web-api", {
+  compatibilityDate: "2026-01-20",
+  d1: ["DB"],
+  entrypoint: "./src/index.ts",
+  ratelimits: [{ name: "LIMIT_5", simple: { limit: LIMIT, period: PERIOD } }],
+  routes: ["example.com/api/*"],
+  secrets: ["API_KEY"],
+  vars: ["GREETING", "SITE_URL"],
 });

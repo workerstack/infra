@@ -14,6 +14,8 @@ import { driftOf } from "./drift-of.ts";
 import { loadProductKit } from "./load-product-kit.ts";
 import type { PackageInput } from "./package-input.ts";
 import { planCfPackage } from "./plan-cf-package.ts";
+import type { PlannedFile } from "./planned-file.ts";
+import { refuseHandWritten } from "./refuse-hand-written.ts";
 import { writePlanned } from "./write-planned.ts";
 
 /** What `runCfGen` runs: the product, whether only to check, and how it types a package it wrote (`cfTypes`). */
@@ -39,7 +41,11 @@ function readRegistry(file: string): string {
 async function generate(run: ProductRun, input: PackageInput): Promise<void> {
   const registry = run.kit.ratelimitFile();
   const before = readRegistry(registry);
-  const written = writePlanned(await run.kit[ALLOCATE_RATELIMITS](() => planCfPackage(input)));
+  const planned = await run.kit[ALLOCATE_RATELIMITS](() => planCfPackage(input));
+
+  refuseHandWritten(planned, (file) => shownPath(run.product, file));
+
+  const written = writePlanned(planned);
 
   if (readRegistry(registry) !== before) written.push(registry);
 
@@ -48,9 +54,17 @@ async function generate(run: ProductRun, input: PackageInput): Promise<void> {
   await run.runTypes(input.dir, "prod");
 }
 
+// The planned files of one package that drifted, as shown; a hand-written one fails first.
+function checked(input: CfGen, planned: readonly PlannedFile[]): string[] {
+  refuseHandWritten(planned, (file) => shownPath(input.product, file));
+
+  return driftOf(planned).map((file) => shownPath(input.product, file));
+}
+
 /**
  * `infra gen` for one product: every Worker package's `.cloudflare/wrangler.<scope>.json` and `.dev.vars.<scope>`,
- * after its locale redirects are checked against its zone. Under `check` it writes nothing and fails naming each
+ * and the `database.migrate.config.ts` of each migrations dir that names a database, after its locale redirects are
+ * checked against its zone. Under `check` it writes nothing and fails naming each
  * file that is out of date; otherwise it types each package in the `prod` mode. A product with no
  * `cloudflare.config.ts` has nothing to do.
  */
@@ -68,7 +82,7 @@ export async function runCfGen(input: CfGen): Promise<void> {
   await runInOrder(configs, async (file) => {
     const target = { dir: dirname(file), kit, origin, shown: shownPath(product, file) };
 
-    if (input.check) drift.push(...driftOf(await planCfPackage(target)).map((path) => shownPath(product, path)));
+    if (input.check) drift.push(...checked(input, await planCfPackage(target)));
     else await generate({ ...input, kit }, target);
   });
 

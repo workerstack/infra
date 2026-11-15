@@ -47,6 +47,14 @@ function rejected() {
   kit.secrets("NOPE");
   // @ts-expect-error an infra credential is granted with secrets, never as a var
   kit.vars("local", "CF_API_TOKEN");
+  // @ts-expect-error NOPE is no d1 binding of the config
+  kit.worker("w", { d1: ["NOPE"], entrypoint: "./src/index.ts" });
+  // @ts-expect-error NOPE is no kv binding of the config
+  kit.worker("w", { entrypoint: "./src/index.ts", kv: ["NOPE"] });
+  // @ts-expect-error NOPE is no key of the env's views
+  kit.worker("w", { entrypoint: "./src/index.ts", vars: ["NOPE"] });
+  // @ts-expect-error NOPE is no key of the env's views
+  kit.worker("w", { entrypoint: "./src/index.ts", secrets: ["NOPE"] });
 }
 
 it("rejects a name the config or env does not declare", () => {
