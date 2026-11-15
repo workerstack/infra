@@ -10,11 +10,11 @@
 - [@workerstack/testing](https://www.npmjs.com/package/@workerstack/testing): End-to-end matrix testing for APIs, web apps and Workers
 <!-- /repo:available -->
 
-<!-- repo:refs d3fb86a4 -->
+<!-- repo:refs c9a32a93 -->
 - `install.md`: Install the package
 - `config.md`: Config and product discovery
 - `credentials.md`: Credentials from defineEnv
 - `api.md`: Cloudflare API client
-- `commands.md`: Get and set commands
+- `commands.md`: Product and Worker commands
 - `cf-kit.md`: Worker configs from one env
 <!-- /repo:refs -->

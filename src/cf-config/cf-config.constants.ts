@@ -21,3 +21,6 @@ export const DEV_VARS_UNSAFE: RegExp = /["\\\n\r]/;
 
 /** A directory name, or a path ending in one, that discovery never enters. */
 export const CF_SKIPPED_DIR: RegExp = /(?:^|\/)(?:node_modules|\.git|\.worktrees)$/;
+
+/** Where a package manager installs a package's dependencies. */
+export const INSTALLED_DIR = "node_modules";

@@ -14,3 +14,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cloudflare API client zone and Access operations and provisioning that returns new secrets as env writes
 - infra get set zone-get and zone-set with new secrets written through bun repo env set
 - cf-kit, infra gen and generated zone and locale redirects
+- infra deploy logs-tail logs-query observability-sync and probe

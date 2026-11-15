@@ -1,11 +1,11 @@
 ---
-description: Get and set commands
+description: Product and Worker commands
 order: 50
 ---
 
 # Commands
 
-Five commands check, change and generate what a product's config describes. Each takes `[name|--all]`.
+Five commands check, change and generate what a product's config describes; five more act on Workers, below. Each takes `[name|--all]`.
 
 ```console
 $ infra get              # the product holding the current dir, else the only product
@@ -69,6 +69,64 @@ Ids and secrets found before a step fails are still written.
 ```console
 infra set: apps/web: APPLE_PRIVATE_KEY has no prod value; run bun repo env set APPLE_PRIVATE_KEY --scope prod
 ```
+
+## Worker commands
+
+Five commands act on Workers, not products. They list Workers by name instead of taking `[name|--all]`.
+
+```console
+$ infra deploy --scope prod                  # the Worker at the current dir
+$ infra deploy api web --scope dev --prune
+$ infra logs-tail api --scope prod --minutes 5
+$ infra logs-query api --view invocations --errors
+$ infra observability-sync api --scope prod --apply
+$ infra probe example.com
+```
+
+| Usage                                                                                                  | What it does |
+| ------------------------------------------------------------------------------------------------------ | ------------ |
+| `infra deploy [worker...] --scope dev\|prod [--prune]`                                                  | Deploys each Worker with `cf deploy`, then lists the secrets its config no longer declares. `--prune` deletes them. |
+| `infra logs-tail <worker>... [--scope prod\|dev] [--minutes 15]`                                        | Tails every matched Worker at once. `--minutes 0` tails until killed. |
+| `infra logs-query <worker>... [--scope prod\|dev] [--view events\|invocations\|traces\|calculations]`    | Queries Workers Observability and prints a summary. |
+| `infra observability-sync <worker>... [--scope prod\|dev] [--apply]`                                    | Reports drift between each Worker's observability settings and its config; `--apply` patches them. |
+| `infra probe [host]`                                                                                   | Probes TLS ALPN, HTTP/1.1, HTTP/2 SETTINGS and HTTP/3 on a live host. Asks for the host when none is given. |
+
+`logs-tail` also takes the wrangler filters `--status`, `--method`, `--search`, `--header`, `--ip` and `--sampling-rate`. `logs-query` also takes `--minutes 60` or `--from <iso> [--to <iso>]`, `--errors`, `--needle text`, `--filter key<op>value`, `--group-by key` and `--limit 50`. `--scope` defaults to `prod` for the logs and observability commands; `deploy` requires it, and without it prints `usage: infra deploy [worker...] --scope dev|prod [--prune]` and exits 2. `infra probe` needs no Worker, product or credentials.
+
+### Picking Workers
+
+A selector is a product name (every Worker in it), a Worker package dir taken from the root, the package dir's base name, or the Worker's script name in the scope. A Worker picked twice runs once. `infra deploy` with no name deploys the Worker whose package holds the current dir. A selector that matches nothing stops the command with exit 1 and lists the Workers by base name:
+
+```console
+No worker matches "nope". Known:
+  web-api (apps/web/api)
+```
+
+A selector that matches only Workers that never deploy to the scope stops the command too.
+
+### Credentials
+
+Each Worker runs with the env of the product that holds it, from `env.global` and the scope. A missing credential stops that Worker before any program runs:
+
+```console
+infra deploy: apps/web/api: CLOUDFLARE_ACCOUNT_EMAIL has no global value; run bun repo env set CLOUDFLARE_ACCOUNT_EMAIL --scope global
+```
+
+### Deploy secret flow
+
+1. The product's credentials are read. A missing one fails before any program runs.
+2. A Vite-built Worker runs its `build:<scope>` script first; a failed build stops the Worker before any secret is read.
+3. The secrets its `cloudflare.config.ts` declares are read from the scope and written to a `0600` temp JSON file. `cf deploy --mode <scope> --secrets-file <file>` uploads them. The file is removed when `cf deploy` ends, however it ends. A Worker with no secrets gets no file.
+4. `wrangler secret list` names the secrets the config does not declare. They are listed with `Run again with --prune to delete them.`; `--prune` deletes them.
+
+A failing Worker prints `infra deploy: <dir>: <message>`; the rest still deploy, and the exit code is 1.
+
+### Dumps
+
+`logs-tail` and `logs-query` print a summary and keep the full response under the repo root in `.tmp/infra/<kind>/`:
+
+- `.tmp/infra/tail/<stamp>-<scope>.ndjson`
+- `.tmp/infra/query/<stamp>-<script>-<view>.json`
 
 ## Test runners
 
