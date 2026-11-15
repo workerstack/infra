@@ -1,5 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import type { Server } from "node:net";
+import { join } from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -14,7 +15,7 @@ import {
 import { ask, textOf, atEdge, hold, lockFileOf, seen, stackFileOf } from "./__fixtures__/launcher-probes.ts";
 import { alive } from "./__fixtures__/process-probes.ts";
 import { freePort } from "./free-port.ts";
-import { WORKER_HEADER } from "./local.constants.ts";
+import { TEMP_DIR, WORKER_HEADER } from "./local.constants.ts";
 import type { RunningStack } from "./stack-options.ts";
 import { startStack } from "./start-stack.ts";
 
@@ -108,15 +109,19 @@ describe("the edge of a started stack", () => {
 
 describe("a stopped stack", () => {
   it(
-    "stops every child and removes its state and lock",
+    "stops every child and removes its state, its lock and the temp dir its children wrote to",
     async () => {
       const pids = running().processes.map((each) => each.child.pid);
+      const temp = join(root, TEMP_DIR);
+
+      expect(readdirSync(temp).filter((entry) => entry.startsWith("miniflare-")).length).toBeGreaterThan(0);
 
       await running().stop();
       state.stack = undefined;
       expect(pids.filter((pid) => alive(pid))).toStrictEqual([]);
       expect(existsSync(stackFileOf(root))).toBe(false);
       expect(existsSync(lockFileOf(root))).toBe(false);
+      expect(existsSync(temp)).toBe(false);
     },
     BOOT,
   );

@@ -14,6 +14,15 @@ export const REGISTRY_DIR = ".wrangler/loc/registry";
 
 export const DISPATCHER_DIR = ".wrangler/loc/dispatcher";
 
+/** The temp dir the stack's children write to, removed on a stop: a force stop leaves no miniflare dir behind. */
+export const TEMP_DIR = ".wrangler/loc/tmp";
+
+/** How often removing the temp dir retries: on win32 a killed child's files stay locked for a moment. */
+export const RM_RETRIES = 10;
+
+/** The env keys that point a child's temp dir: TMPDIR on posix, TEMP and TMP on win32. */
+export const TEMP_ENV_KEYS = ["TMPDIR", "TEMP", "TMP"] as const;
+
 /** Persisted Worker state (KV, queues, local D1); never wiped by `infra loc`. */
 export const STATE_DIR = ".wrangler/state";
 

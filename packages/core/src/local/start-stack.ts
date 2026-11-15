@@ -6,7 +6,7 @@ import { clearOrphans } from "./clear-orphans.ts";
 import { dockerInfo } from "./docker-info.ts";
 import type { Edge } from "./edge-target.ts";
 import { listenEdge } from "./listen-edge.ts";
-import { LOCK_FILE, ORIGIN_PORT, STATE_DIR } from "./local.constants.ts";
+import { LOCK_FILE, ORIGIN_PORT, RM_RETRIES, STATE_DIR, TEMP_DIR } from "./local.constants.ts";
 import { renderTable } from "./render-table.ts";
 import { resolverOf } from "./resolver-of.ts";
 import { routeHosts } from "./route-hosts.ts";
@@ -89,7 +89,7 @@ async function launch(options: StackOptions, held: Launch, cleanup: () => Promis
  * Starts the stack: refuses when one already runs in this checkout (or a container Worker has no Docker), clears
  * what a killed run left, binds the edge on the origin port, writes the state file, runs `prepare`, starts every
  * process, waits until each answers, then routes the edge to them. Any failure on the way stops what started,
- * closes the edge and removes the state and lock files.
+ * closes the edge and removes the state and lock files and the children's temp dir.
  */
 export async function startStack(options: StackOptions): Promise<RunningStack> {
   refuseBusy(options);
@@ -97,7 +97,11 @@ export async function startStack(options: StackOptions): Promise<RunningStack> {
   const lockFile = join(options.productRoot, LOCK_FILE);
   const stackFile = localStackPath(options.productRoot);
 
+  const temp = join(options.productRoot, TEMP_DIR);
+
   await clearOrphans(lockFile);
+  // What a killed run's children left in the stack's temp dir; on win32 a stop is a force kill, which leaves it all.
+  rmSync(temp, { force: true, maxRetries: RM_RETRIES, recursive: true });
 
   const edge = await listenEdge(options.originCandidate);
   const held: Launch = { children: [], edge, lockFile, stackFile };
@@ -105,6 +109,7 @@ export async function startStack(options: StackOptions): Promise<RunningStack> {
   async function cleanup(): Promise<void> {
     await edge.close();
     await stopGroups(held.children);
+    rmSync(temp, { force: true, maxRetries: RM_RETRIES, recursive: true });
     rmSync(stackFile, { force: true });
     rmSync(lockFile, { force: true });
   }

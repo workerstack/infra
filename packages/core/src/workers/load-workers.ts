@@ -1,9 +1,10 @@
-import { dirname, relative, sep } from "node:path";
+import { dirname } from "node:path";
 
 import { discoverCfConfigs } from "../cf-config/discover-cf-configs.ts";
 import { loadProductKit } from "../cf-config/load-product-kit.ts";
 import { readCfConfig } from "../cf-config/read-cf-config.ts";
 import { discoverProducts, type Product } from "../products.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { DEPLOY_SCOPES } from "./deploy-scopes.constants.ts";
 import type { WorkerCatalog } from "./worker-catalog.ts";
 import { workerOf } from "./worker-of.ts";
@@ -21,7 +22,7 @@ async function productWorkers(root: string, product: Product): Promise<WorkerRec
     files.map(async (file) => {
       const read = await Promise.all(scopes.map(async (scope) => ({ config: await readCfConfig(file, scope), scope })));
 
-      return workerOf({ dir: relative(root, dirname(file)).split(sep).join("/"), file, product, read });
+      return workerOf({ dir: posixRelative(root, dirname(file)), file, product, read });
     }),
   );
 }

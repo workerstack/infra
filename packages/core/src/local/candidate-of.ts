@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 
 import * as z from "zod";
 
@@ -8,6 +8,7 @@ import type { CfConfig } from "../cf-config/cf-config.ts";
 import { objectsAt } from "../cf-config/objects-at.ts";
 import { stringAt } from "../cf-config/string-at.ts";
 import type { CfKit } from "../cf-kit/cf-kit.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { edgeRoutesSchema } from "./edge-route.ts";
 import { VITE_WORKER_PLUGIN } from "./local.constants.ts";
 import { placedOnZone } from "./placed-on-zone.ts";
@@ -41,7 +42,7 @@ function kindOf(read: PackageRead, dir: string, apps: readonly string[]): Candid
  * its `local` read, its routes from its `prod` one.
  */
 export function candidateOf(read: PackageRead, kit: CfKit, localHost: string): StackCandidate {
-  const dir = relative(read.productRoot, read.dir);
+  const dir = posixRelative(read.productRoot, read.dir);
   const prodName = stringAt(read.prod.wrangler, "name") ?? "";
   const worker = prodName.endsWith(PROD_SUFFIX) ? prodName.slice(0, -PROD_SUFFIX.length) : prodName;
   const routes = edgeRoutesSchema().parse(read.prod.wrangler.routes ?? []);

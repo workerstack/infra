@@ -34,3 +34,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On macOS, `infra loc` reads full process command lines, so a stale stack started from a long command still matches its lock and is cleared.
 - Messages print paths from the product root with / on Windows too: a missing locale-redirects.json, a missing database.migrate.config.ts, and the dump file of infra logs tail and query no longer show backslashes, and a locale app nested in a subdir matches its zone entry.
 - `infra loc` runs each app's installed vite through its runtime instead of `bun x vite`, so apps start on Windows; on Windows a stack stops with `taskkill /T /F` at once, since a windowless process cannot be asked to close.
+- `infra loc` gives its Workers and apps a temp dir of their own under `.wrangler/loc/tmp` and removes it on stop, so a stop on Windows leaves no miniflare dirs in the system temp dir; a Worker named by a package dir is found on Windows too.

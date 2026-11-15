@@ -1,5 +1,6 @@
-import { relative, resolve } from "node:path";
+import { resolve } from "node:path";
 
+import { posixRelative } from "../shared/posix-relative.ts";
 import type { DeployScope } from "./deploy-scope.ts";
 import { targetOf } from "./target-of.ts";
 import type { TargetResult } from "./target-result.ts";
@@ -18,7 +19,7 @@ function matches(worker: WorkerRecord, selector: { asDir: string; text: string }
 }
 
 function pick(catalog: WorkerCatalog, selector: string, scope: DeployScope): TargetResult {
-  const asDir = relative(catalog.root, resolve(catalog.root, selector));
+  const asDir = posixRelative(catalog.root, resolve(catalog.root, selector));
   const found = catalog.workers.filter((worker) => matches(worker, { asDir, text: selector }, scope));
 
   if (found.length === 0) {

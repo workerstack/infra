@@ -1,8 +1,7 @@
-import { relative, sep } from "node:path";
-
 import { peerProgram } from "../peer-program.ts";
 import type { Product } from "../products.ts";
 import type { SecretWrite } from "../provision/secret-write.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { runInOrder } from "../shared/run-in-order.ts";
 import { findEnvFile } from "./find-env-file.ts";
 import type { SecretsDeps } from "./secrets-deps.ts";
@@ -21,7 +20,7 @@ export function secretsWriter(deps: SecretsDeps) {
     }
 
     const program = peerProgram(root, "@workerstack/repo", "repo");
-    const shown = relative(root, file).split(sep).join("/");
+    const shown = posixRelative(root, file);
 
     await runInOrder(secrets, async ({ key, scope, value }) => {
       const args = [...program.args, "env", "set", key, "--scope", scope, "--file", shown];
