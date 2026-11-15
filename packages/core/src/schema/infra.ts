@@ -3,6 +3,7 @@ import type { WorkerConfig } from "@cloudflare/config";
 import type { AppleConfig } from "./apple.ts";
 import type { EnvBindings } from "./bindings.ts";
 import type { CloudflareConfig, CloudflareConfigInput } from "./cloudflare.ts";
+import type { GithubConfig } from "./github.ts";
 import type { GoogleConfig } from "./google.ts";
 import type { LocalConfig } from "./local-config.ts";
 import type { MicrosoftConfig } from "./microsoft.ts";
@@ -42,6 +43,8 @@ export type InfraConfigInput<
   cloudflare?: CloudflareConfigInput<B, D>;
   /** The product env holding the account credentials. */
   env: V;
+  /** GitHub provider (sign-in with a GitHub App). */
+  github?: GithubConfig;
   /** Google provider (OAuth, Search Console). */
   google?: GoogleConfig;
   /** The local stack's host and URL vars. */
@@ -61,6 +64,7 @@ export type InfraConfig<
   apple?: AppleConfig;
   cloudflare?: CloudflareConfig;
   env: V;
+  github?: GithubConfig;
   google?: GoogleConfig;
   local?: LocalConfig;
   microsoft?: MicrosoftConfig;

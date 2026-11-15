@@ -16,6 +16,7 @@ const results = {
 
 const web = product("apps/web", {
   cloudflare: cloudflareConfig({ access: {} }),
+  github: { oauth: {} },
   microsoft: { oauth: {} },
 });
 
@@ -30,6 +31,7 @@ it("set runs the runners in the old order, writes ids once, then sends every sec
     "redirects",
     "zone",
     "microsoft",
+    "github",
     "write-config",
     "write-secrets",
   ]);

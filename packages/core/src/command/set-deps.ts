@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 import { applyAppleConfig } from "../apple/apply-apple-config.ts";
+import { applyGithubConfig } from "../github/apply-github-config.ts";
 import { applyGoogleConfig } from "../google/apply-google-config.ts";
 import { applyMicrosoftConfig } from "../microsoft/apply-microsoft-config.ts";
 import { provisionAccess } from "../provision/provision-access.ts";
@@ -16,6 +17,7 @@ import { realClient } from "./real-client.ts";
 /** The runners, the secret writer and the config file edges `infra set` goes through, swapped by a test. */
 export type SetDeps = ClientDeps & {
   applyApple: typeof applyAppleConfig;
+  applyGithub: typeof applyGithubConfig;
   applyGoogle: typeof applyGoogleConfig;
   applyMicrosoft: typeof applyMicrosoftConfig;
   applyZoneConfig: typeof applyZoneConfig;
@@ -32,6 +34,7 @@ export type SetDeps = ClientDeps & {
 export function realSetDeps(): SetDeps {
   return {
     applyApple: applyAppleConfig,
+    applyGithub: applyGithubConfig,
     applyGoogle: applyGoogleConfig,
     applyMicrosoft: applyMicrosoftConfig,
     applyZoneConfig,

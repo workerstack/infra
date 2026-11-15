@@ -1,4 +1,5 @@
 import { verifyAppleConfig } from "../apple/verify-apple-config.ts";
+import { verifyGithubConfig } from "../github/verify-github-config.ts";
 import { verifyGoogleConfig } from "../google/verify-google-config.ts";
 import { verifyMicrosoftConfig } from "../microsoft/verify-microsoft-config.ts";
 import { getCloudflare } from "../runner/get-cloudflare.ts";
@@ -10,6 +11,7 @@ import { realClient } from "./real-client.ts";
 export type GetDeps = ClientDeps & {
   getCloudflare: typeof getCloudflare;
   verifyApple: typeof verifyAppleConfig;
+  verifyGithub: typeof verifyGithubConfig;
   verifyGoogle: typeof verifyGoogleConfig;
   verifyMicrosoft: typeof verifyMicrosoftConfig;
 };
@@ -21,6 +23,7 @@ export function realGetDeps(): GetDeps {
     getCloudflare,
     log: stdoutLog,
     verifyApple: verifyAppleConfig,
+    verifyGithub: verifyGithubConfig,
     verifyGoogle: verifyGoogleConfig,
     verifyMicrosoft: verifyMicrosoftConfig,
   };

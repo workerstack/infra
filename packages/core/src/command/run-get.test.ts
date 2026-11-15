@@ -16,14 +16,15 @@ function deps(lines: string[]): GetDeps {
     },
     log: (line) => lines.push(line),
     verifyApple: () => Promise.resolve({ jwksReachable: true, oauth: [] }),
+    verifyGithub: () => Promise.resolve({ oauth: [] }),
     verifyGoogle: () => Promise.resolve({ oauth: [] }),
     verifyMicrosoft: () => Promise.resolve({ oauth: [] }),
   };
 }
 
-it("get reports Cloudflare, then Google, Apple and Microsoft under their headings", async () => {
+it("get reports Cloudflare, then Google, Apple, Microsoft and GitHub under their headings", async () => {
   const lines: string[] = [];
-  const web = product("apps/web", { apple: {}, cloudflare: cloudflareConfig(), google: {}, microsoft: {} });
+  const web = product("apps/web", { apple: {}, cloudflare: cloudflareConfig(), github: {}, google: {}, microsoft: {} });
   const { host, out } = testHost([web]);
 
   expect(await runGet([], host, deps(lines))).toBe(0);
@@ -33,6 +34,7 @@ it("get reports Cloudflare, then Google, Apple and Microsoft under their heading
     "\n Apple: apps/web",
     "  JWKS endpoint: reachable ✓",
     "\n Microsoft: apps/web",
+    "\n GitHub: apps/web",
   ]);
   expect(out).toStrictEqual(["\n Verification complete."]);
 });

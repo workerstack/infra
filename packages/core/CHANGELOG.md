@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `infra db-migrate` and `db-wipe` on the kit's migrations
 - `infra loc` runs a product's Workers and apps behind one local edge
 - `infra.worker` builds a Worker's whole `cloudflare.config.ts` from one call, and `infra gen` writes each database's `database.migrate.config.ts`
+- `github.oauth`: `infra set` creates a GitHub sign-in App by the manifest flow in the browser, and `infra get` checks it
 
 ### Changed
 

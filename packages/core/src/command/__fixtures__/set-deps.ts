@@ -38,6 +38,11 @@ export function fakeSetDeps(
 
   const deps: SetDeps = {
     applyApple: () => Promise.resolve(),
+    applyGithub: () => {
+      step("github");
+
+      return Promise.resolve({ ...nothing });
+    },
     applyGoogle: () => Promise.resolve(),
     applyMicrosoft: () => {
       step("microsoft");

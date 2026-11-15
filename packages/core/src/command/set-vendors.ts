@@ -2,9 +2,17 @@ import type { Product } from "../products.ts";
 import type { Provisioned } from "../provision/provisioned.ts";
 import type { SetDeps } from "./set-deps.ts";
 
-/** Applies the Google, Apple and Microsoft config, in that order; Microsoft's edits and secrets collect in `out`. */
+function collect(out: Provisioned, result: Provisioned): void {
+  out.edits.push(...result.edits);
+  out.secrets.push(...result.secrets);
+}
+
+/**
+ * Applies the Google, Apple, Microsoft and GitHub config, in that order; Microsoft's and GitHub's edits and secrets
+ * collect in `out`.
+ */
 export async function setVendors(deps: SetDeps, product: Product, out: Provisioned): Promise<void> {
-  const { apple, env, google, microsoft } = product.config;
+  const { apple, env, github, google, microsoft } = product.config;
   const { log } = deps;
 
   if (google !== undefined) {
@@ -19,13 +27,15 @@ export async function setVendors(deps: SetDeps, product: Product, out: Provision
     log(" Done: Apple");
   }
 
-  if (microsoft === undefined) return;
+  if (microsoft !== undefined) {
+    log(`\n Microsoft: ${product.name}`);
+    collect(out, await deps.applyMicrosoft({ config: microsoft, env, log }));
+    log(" Done: Microsoft");
+  }
 
-  log(`\n Microsoft: ${product.name}`);
+  if (github === undefined) return;
 
-  const result = await deps.applyMicrosoft({ config: microsoft, env, log });
-
-  out.edits.push(...result.edits);
-  out.secrets.push(...result.secrets);
-  log(" Done: Microsoft");
+  log(`\n GitHub: ${product.name}`);
+  collect(out, await deps.applyGithub({ config: github, env, log }));
+  log(" Done: GitHub");
 }

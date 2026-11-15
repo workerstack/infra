@@ -19,8 +19,8 @@ $ infra gen web --check
 
 | Command         | What it does                                                                                                     |
 | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `infra get`     | Reports the live Cloudflare account and zone, then Google, Apple and Microsoft, against the config. Changes nothing. |
-| `infra set`     | Provisions bindings, Access and AI Search, applies the zone and its redirects, then applies Google, Apple and Microsoft.            |
+| `infra get`     | Reports the live Cloudflare account and zone, then Google, Apple, Microsoft and GitHub, against the config. Changes nothing. |
+| `infra set`     | Provisions bindings, Access and AI Search, applies the zone and its redirects, then applies Google, Apple, Microsoft and GitHub. A GitHub scope whose `clientId` is `STUB` opens a browser step. |
 | `infra zone-get`| Reports the zone: rules, drift, declared bindings, R2, AI Search and Turnstile.                                   |
 | `infra zone-set`| Applies the zone settings and the generated zone and locale redirects only.                                      |
 | `infra gen`     | Writes each Worker package's `.cloudflare/wrangler.<scope>.json` and `.dev.vars.<scope>`, and the `database.migrate.config.ts` beside each D1 migrations dir whose `migrations` names a `database`. `--check` writes nothing and fails on drift. |
@@ -109,8 +109,8 @@ Both read the product's credentials first, and need `@workerstack/database` and 
 
 `infra set` writes ids and secrets to different places.
 
-- A new id (a D1 database, a KV namespace, a Microsoft client id) is written into `infra.config.ts` by one file write.
-- A new secret never touches the config. The Turnstile secret key, the Access service token secret and a new Microsoft client secret go to `bun repo env set KEY --scope S --file F`, with the value on stdin. `F` is the env file under the product that calls `defineEnv(` and exports the config's `env`.
+- A new id (a D1 database, a KV namespace, a Microsoft or GitHub client id) is written into `infra.config.ts` by one file write.
+- A new secret never touches the config. The Turnstile secret key, the Access service token secret and a new Microsoft or GitHub client secret go to `bun repo env set KEY --scope S --file F`, with the value on stdin. `F` is the env file under the product that calls `defineEnv(` and exports the config's `env`.
 
 Each secret prints one line:
 
@@ -124,9 +124,28 @@ Microsoft adds a client secret only when the scope has no `MICROSOFT_CLIENT_SECR
 
 Ids and secrets found before a step fails are still written.
 
+### GitHub browser step
+
+GitHub has no API that creates an OAuth app, so `infra set` creates a GitHub App, which also signs users in. For each `github.oauth` scope whose `clientId` is `STUB`, it serves a one-page form on `127.0.0.1` on a free port and opens it in the browser:
+
+```console
+    [prod] "Example App" ...
+    → create the app in the browser: http://127.0.0.1:41234/
+```
+
+The page posts the app's manifest to GitHub, to the org's settings when `org` is set. Confirm the app there. GitHub sends the browser back to the local server, which checks the `state`, trades the code for the app's credentials and closes. The client id goes into `infra.config.ts` and the client secret to `GITHUB_CLIENT_SECRET` for that scope. The app's private key and webhook secret are not stored. The server gives up after 10 minutes.
+
+A scope with a real client id and a `GITHUB_CLIENT_SECRET` does nothing. A real id with no secret prints how to add one. Under a test runner, or with no terminal, a `STUB` scope fails:
+
+```console
+infra set: apps/web: github.oauth.prod has clientId "STUB" and needs the browser; run infra set in a terminal
+```
+
+`infra get` looks each app up by its slug (the app name lowercased, with dashes) on the public GitHub API, with no token. It reports whether the app exists, whether its client id matches the config, and whether the env has `GITHUB_CLIENT_SECRET`.
+
 ## Keys
 
-`infra get` and `infra set` read `CLOUDFLARE_ACCOUNT_ID` and the account credentials from `env.global`. They read `APPLE_PRIVATE_KEY` and `MICROSOFT_CLIENT_SECRET` per scope, and `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` and `MICROSOFT_GRAPH_API_TOKEN` from `global`. A missing key prints its fix line:
+`infra get` and `infra set` read `CLOUDFLARE_ACCOUNT_ID` and the account credentials from `env.global`. They read `APPLE_PRIVATE_KEY`, `MICROSOFT_CLIENT_SECRET` and `GITHUB_CLIENT_SECRET` per scope, and `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` and `MICROSOFT_GRAPH_API_TOKEN` from `global`. A missing key prints its fix line:
 
 ```console
 infra set: apps/web: APPLE_PRIVATE_KEY has no prod value; run bun repo env set APPLE_PRIVATE_KEY --scope prod

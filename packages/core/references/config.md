@@ -103,6 +103,39 @@ subdomainOrigin(new URL(origin), "api"); // http://api.example.localhost
 
 `findLocalStack` returns `undefined` instead of throwing, `localStackPath` names the state file, and `WORKER_HEADER` is the header the edge names a Worker in.
 
+## GitHub sign-in
+
+`github.oauth` declares one GitHub App per scope for signing users in. `infra set` creates each app whose `clientId` is `"STUB"` in the browser and writes its client id back (see the GitHub browser step in commands). Its client secret is `GITHUB_CLIENT_SECRET` in that scope of the env.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+  github: {
+    oauth: {
+      prod: {
+        appName: "Example App",
+        clientId: "STUB",
+        homepageUrl: "https://example.com",
+        redirectOrigins: ["https://example.com"],
+      },
+    },
+  },
+});
+```
+
+| Field             | What it is                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------------- |
+| `appName`         | The app's name on GitHub. Its slug is the name lowercased, each run of other characters a dash. |
+| `clientId`        | `"STUB"` until `infra set` creates the app.                                                     |
+| `homepageUrl`     | The app's homepage.                                                                             |
+| `redirectOrigins` | Each origin's `/v1/auth/oauth/github/callback` is a callback URL.                              |
+| `org`             | The organization that owns the app. Unset, the signed-in user owns it.                          |
+| `public`          | Whether accounts outside the owner can sign in. `true` when unset; a private app signs in only the owning organization's members. |
+
+The app asks only to read email addresses, and its webhook is off.
+
 ## Products
 
 A product is one `infra.config.ts`. Its name is its directory relative to the repo root, or `.` at the root.

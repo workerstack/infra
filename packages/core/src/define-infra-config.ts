@@ -56,6 +56,8 @@ function parsed(input: InfraConfigInput): InfraConfig {
 
   if (input.microsoft !== undefined) result.microsoft = input.microsoft;
 
+  if (input.github !== undefined) result.github = input.github;
+
   if (input.local !== undefined) result.local = checkedLocal(input.local);
 
   return result;

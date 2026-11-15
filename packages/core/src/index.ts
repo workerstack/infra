@@ -62,6 +62,8 @@ export type {
   EmailRoutingRuleInput,
 } from "./schema/email-routing.ts";
 
+export type { GithubConfig, GithubOAuthEnv } from "./schema/github.ts";
+
 export type { GoogleConfig, GoogleOAuthEnv, GoogleSearchConsole } from "./schema/google.ts";
 
 export type { InfraConfig, InfraConfigInput, InfraEnv, InfraScope } from "./schema/infra.ts";

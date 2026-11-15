@@ -1,5 +1,6 @@
 import { reportApple } from "../apple/report-apple.ts";
 import { requiredGlobal } from "../credentials.ts";
+import { reportGithub } from "../github/report-github.ts";
 import { reportGoogle } from "../google/report-google.ts";
 import { reportMicrosoft } from "../microsoft/report-microsoft.ts";
 import type { Product } from "../products.ts";
@@ -16,9 +17,9 @@ async function getCloudflareOf(deps: GetDeps, product: Product): Promise<void> {
   await deps.getCloudflare(client, { accountId, config: cloudflare, env, name: product.name }, deps.log);
 }
 
-/** One product's report: Cloudflare, then Google, Apple and Microsoft, each under its heading. */
+/** One product's report: Cloudflare, then Google, Apple, Microsoft and GitHub, each under its heading. */
 export async function getProduct(deps: GetDeps, product: Product): Promise<void> {
-  const { apple, env, google, microsoft } = product.config;
+  const { apple, env, github, google, microsoft } = product.config;
   const { log } = deps;
 
   await getCloudflareOf(deps, product);
@@ -36,5 +37,10 @@ export async function getProduct(deps: GetDeps, product: Product): Promise<void>
   if (microsoft !== undefined) {
     log(`\n Microsoft: ${product.name}`);
     reportMicrosoft(await deps.verifyMicrosoft({ config: microsoft, env }), log);
+  }
+
+  if (github !== undefined) {
+    log(`\n GitHub: ${product.name}`);
+    reportGithub(await deps.verifyGithub({ config: github, env }), log);
   }
 }
