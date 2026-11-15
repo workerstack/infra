@@ -18,7 +18,10 @@ function deps(lines: string[]): GetDeps {
     verifyApple: () => Promise.resolve({ jwksReachable: true, oauth: [] }),
     verifyGithub: () => Promise.resolve({ oauth: [] }),
     verifyGoogle: () => Promise.resolve({ oauth: [] }),
+    verifyIndexNow: (target) =>
+      Promise.resolve({ keyFile: `https://${target.host}/k.txt`, keyServed: true, urlCount: 2 }),
     verifyMicrosoft: () => Promise.resolve({ oauth: [] }),
+    verifyYandex: (target) => Promise.resolve({ hostUrl: target.hostUrl, sitemaps: [] }),
   };
 }
 
@@ -48,5 +51,32 @@ it("get names the missing account id for a product that lacks it", async () => {
   expect(err).toStrictEqual([
     "infra get: apps/web: CLOUDFLARE_ACCOUNT_ID has no global value; " +
       "run bun repo env set CLOUDFLARE_ACCOUNT_ID --scope global",
+  ]);
+});
+
+it("get reports IndexNow and Yandex after GitHub, defaulting their hosts to the zone domain", async () => {
+  const lines: string[] = [];
+  const indexNow = { key: "abcd1234-key", sitemapUrls: [] };
+  const yandex = { webmaster: { sitemapUrls: [] } };
+  const web = product("apps/web", { cloudflare: cloudflareConfig(), github: {}, indexNow, yandex });
+
+  expect(await runGet([], testHost([web]).host, deps(lines))).toBe(0);
+  expect(lines.slice(1)).toStrictEqual([
+    "\n GitHub: apps/web",
+    "\n IndexNow: apps/web",
+    "  Key file https://example.com/k.txt: served ✓",
+    "  Sitemap URLs: 2",
+    "\n Yandex: apps/web",
+    "  Host https://example.com: verified ✓",
+  ]);
+});
+
+it("get fails an IndexNow product with no host and no zone", async () => {
+  const web = product("apps/web", { indexNow: { key: "abcd1234-key", sitemapUrls: [] } });
+  const { err, host } = testHost([web]);
+
+  expect(await runGet([], host, deps([]))).toBe(1);
+  expect(err).toStrictEqual([
+    "infra get: apps/web: indexNow.host is unset and there is no cloudflare.zone.domain to default to",
   ]);
 });

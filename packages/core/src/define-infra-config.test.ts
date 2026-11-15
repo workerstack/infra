@@ -181,3 +181,21 @@ it("keeps the env type so a kit can check key names", () => {
   // @ts-expect-error NOPE is not a key of the env's local view
   expectTypeOf(config.env.local).toHaveProperty("NOPE");
 });
+
+function withKey(key: string) {
+  return () => defineInfraConfig({ env, indexNow: { key, sitemapUrls: [] } });
+}
+
+it("keeps an IndexNow key of 8 to 128 letters, digits and dashes and rejects any other, naming it", () => {
+  expect(withKey("abcd-1234")().indexNow?.key).toBe("abcd-1234");
+  expect(withKey("A".repeat(128))().indexNow?.key).toBe("A".repeat(128));
+  expect(withKey("short")).toThrow("indexNow.key short is not 8 to 128 letters, digits or dashes");
+  expect(withKey("A".repeat(129))).toThrow("is not 8 to 128 letters, digits or dashes");
+  expect(withKey("abcd_1234")).toThrow("indexNow.key abcd_1234 is not 8 to 128 letters, digits or dashes");
+});
+
+it("keeps the yandex config", () => {
+  const yandex = { webmaster: { sitemapUrls: ["https://example.com/sitemap.xml"] } };
+
+  expect(defineInfraConfig({ env, yandex }).yandex).toStrictEqual(yandex);
+});

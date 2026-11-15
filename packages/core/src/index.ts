@@ -66,6 +66,8 @@ export type { GithubConfig, GithubOAuthEnv } from "./schema/github.ts";
 
 export type { GoogleConfig, GoogleOAuthEnv, GoogleSearchConsole } from "./schema/google.ts";
 
+export type { IndexNowConfig } from "./schema/index-now-config.ts";
+
 export type { InfraConfig, InfraConfigInput, InfraEnv, InfraScope } from "./schema/infra.ts";
 
 export type { LocalConfig } from "./schema/local-config.ts";
@@ -81,6 +83,8 @@ export type { AgentReadinessConfig, AgentReadinessConfigInput, SpeedConfig, Spee
 export type { HstsConfig, HstsConfigInput, SslConfig, SslConfigInput } from "./schema/ssl.ts";
 
 export type { WafConfig, WafConfigInput, WafRule, WafRuleInput } from "./schema/waf.ts";
+
+export type { YandexConfig, YandexWebmaster } from "./schema/yandex.ts";
 
 export type { ZoneConfig, ZoneConfigInput } from "./schema/zone.ts";
 

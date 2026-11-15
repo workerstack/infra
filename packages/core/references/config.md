@@ -136,6 +136,46 @@ export default defineInfraConfig({
 
 The app asks only to read email addresses, and its webhook is off.
 
+## IndexNow
+
+`indexNow` pushes the URLs of the product's sitemaps to IndexNow, which shares them with Bing, Yandex and the other engines that take it. The key is public, so it lives in the config: 8 to 128 letters, digits and dashes. Any other key fails `defineInfraConfig`, naming it. `host` defaults to the zone domain.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+  indexNow: { host: "example.com", key: "0f3c9a1e-7b2d-4c5e", sitemapUrls: ["https://example.com/sitemap.xml"] },
+});
+```
+
+The product serves the key at `https://{host}/{key}.txt`, with the key as the whole body. A static asset does it, such as `public/0f3c9a1e-7b2d-4c5e.txt` holding `0f3c9a1e-7b2d-4c5e`. `infra set` fetches that file first and fails when it is missing or holds something else:
+
+```console
+infra set: apps/web: indexNow: https://example.com/0f3c9a1e-7b2d-4c5e.txt does not serve the key; serve a file there that holds it
+```
+
+Then it reads each sitemap, following a sitemap index one level down, keeps each `<loc>` on the host and POSTs them to `https://api.indexnow.org/indexnow`, at most 10,000 at a time. It logs each response code with its meaning: 200 ok, 202 key pending, 400 bad format, 403 bad key, 422 off-host urls, 429 too many. Any code but 200 and 202 fails.
+
+## Yandex sitemaps
+
+`yandex.webmaster` adds the product's sitemaps to its host in Yandex Webmaster. `hostUrl` defaults to `https://{zone domain}`. The host must already be added and verified in Webmaster; a missing or unverified host fails, naming it.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+  yandex: { webmaster: { hostUrl: "https://example.com", sitemapUrls: ["https://example.com/sitemap.xml"] } },
+});
+```
+
+`infra set` lists the host's sitemaps and adds each one that is missing, so a rerun adds nothing. The OAuth token is `YANDEX_WEBMASTER_TOKEN` in `global`; seal it. To get one, register an app at `https://oauth.yandex.com` with the Webmaster permissions `webmaster:hostinfo` and `webmaster:verify`, open `https://oauth.yandex.com/authorize?response_type=token&client_id=<app id>` signed in as the host's owner, and store the token the page shows:
+
+```console
+$ bun repo env set YANDEX_WEBMASTER_TOKEN --scope global
+```
+
 ## Products
 
 A product is one `infra.config.ts`. Its name is its directory relative to the repo root, or `.` at the root.

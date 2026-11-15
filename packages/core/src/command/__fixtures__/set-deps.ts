@@ -44,6 +44,11 @@ export function fakeSetDeps(
       return Promise.resolve({ ...nothing });
     },
     applyGoogle: () => Promise.resolve(),
+    applyIndexNow: (target) => {
+      step(`indexnow ${target.host}`);
+
+      return Promise.resolve();
+    },
     applyMicrosoft: () => {
       step("microsoft");
 
@@ -51,6 +56,11 @@ export function fakeSetDeps(
         edits: [{ pattern: 'clientId: "STUB"', replacement: 'clientId: "app1"' }],
         secrets: [results.microsoft],
       });
+    },
+    applyYandex: (target) => {
+      step(`yandex ${target.hostUrl}`);
+
+      return Promise.resolve();
     },
     applyZoneConfig: (_client, _zone, options) => {
       step("zone");

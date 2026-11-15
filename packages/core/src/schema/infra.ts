@@ -5,8 +5,10 @@ import type { EnvBindings } from "./bindings.ts";
 import type { CloudflareConfig, CloudflareConfigInput } from "./cloudflare.ts";
 import type { GithubConfig } from "./github.ts";
 import type { GoogleConfig } from "./google.ts";
+import type { IndexNowConfig } from "./index-now-config.ts";
 import type { LocalConfig } from "./local-config.ts";
 import type { MicrosoftConfig } from "./microsoft.ts";
+import type { YandexConfig } from "./yandex.ts";
 
 /** One deploy scope: the local stack, a dev deploy or a prod deploy. */
 export type InfraScope = "local" | "dev" | "prod";
@@ -47,10 +49,14 @@ export type InfraConfigInput<
   github?: GithubConfig;
   /** Google provider (OAuth, Search Console). */
   google?: GoogleConfig;
+  /** IndexNow provider (push the sitemaps' URLs). */
+  indexNow?: IndexNowConfig;
   /** The local stack's host and URL vars. */
   local?: LocalConfig;
   /** Microsoft provider (Entra OAuth). */
   microsoft?: MicrosoftConfig;
+  /** Yandex provider (Webmaster sitemaps). */
+  yandex?: YandexConfig;
 };
 
 /**
@@ -66,6 +72,8 @@ export type InfraConfig<
   env: V;
   github?: GithubConfig;
   google?: GoogleConfig;
+  indexNow?: IndexNowConfig;
   local?: LocalConfig;
   microsoft?: MicrosoftConfig;
+  yandex?: YandexConfig;
 };

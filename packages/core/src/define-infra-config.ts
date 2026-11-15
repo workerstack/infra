@@ -4,7 +4,9 @@ import type { WorkerConfig } from "@cloudflare/config";
 import { buildKit } from "./cf-kit/build-kit.ts";
 import type { KeysOf } from "./cf-kit/cf-kit-types.ts";
 import type { CfKit } from "./cf-kit/cf-kit.ts";
+import { INDEX_NOW_KEY_PATTERN } from "./index-now/index-now-key-pattern.constants.ts";
 import type { EnvBindings } from "./schema/bindings.ts";
+import type { IndexNowConfig } from "./schema/index-now-config.ts";
 import type { InfraConfig, InfraConfigInput, InfraEnv } from "./schema/infra.ts";
 import type { LocalConfig } from "./schema/local-config.ts";
 import { parseZoneConfig } from "./schema/zone.ts";
@@ -58,6 +60,10 @@ function parsed(input: InfraConfigInput): InfraConfig {
 
   if (input.github !== undefined) result.github = input.github;
 
+  if (input.indexNow !== undefined) result.indexNow = checkedIndexNow(input.indexNow);
+
+  if (input.yandex !== undefined) result.yandex = input.yandex;
+
   if (input.local !== undefined) result.local = checkedLocal(input.local);
 
   return result;
@@ -72,6 +78,14 @@ function checkApp(dir: string, apps: readonly string[]): void {
   if (dir.split("/").includes("..")) throw new Error(`local.apps dir ${dir} leaves the product root`);
 
   if (apps.indexOf(dir) !== apps.lastIndexOf(dir)) throw new Error(`local.apps names ${dir} twice`);
+}
+
+// The key is public and lives in the config, so a bad one is named in full.
+function checkedIndexNow(indexNow: IndexNowConfig): IndexNowConfig {
+  if (!INDEX_NOW_KEY_PATTERN.test(indexNow.key))
+    throw new Error(`indexNow.key ${indexNow.key} is not 8 to 128 letters, digits or dashes`);
+
+  return indexNow;
 }
 
 function checkedLocal(local: LocalConfig): LocalConfig {

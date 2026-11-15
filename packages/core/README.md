@@ -173,6 +173,46 @@ export default defineInfraConfig({
 
 The app asks only to read email addresses, and its webhook is off.
 
+### IndexNow
+
+`indexNow` pushes the URLs of the product's sitemaps to IndexNow, which shares them with Bing, Yandex and the other engines that take it. The key is public, so it lives in the config: 8 to 128 letters, digits and dashes. Any other key fails `defineInfraConfig`, naming it. `host` defaults to the zone domain.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+  indexNow: { host: "example.com", key: "0f3c9a1e-7b2d-4c5e", sitemapUrls: ["https://example.com/sitemap.xml"] },
+});
+```
+
+The product serves the key at `https://{host}/{key}.txt`, with the key as the whole body. A static asset does it, such as `public/0f3c9a1e-7b2d-4c5e.txt` holding `0f3c9a1e-7b2d-4c5e`. `infra set` fetches that file first and fails when it is missing or holds something else:
+
+```console
+infra set: apps/web: indexNow: https://example.com/0f3c9a1e-7b2d-4c5e.txt does not serve the key; serve a file there that holds it
+```
+
+Then it reads each sitemap, following a sitemap index one level down, keeps each `<loc>` on the host and POSTs them to `https://api.indexnow.org/indexnow`, at most 10,000 at a time. It logs each response code with its meaning: 200 ok, 202 key pending, 400 bad format, 403 bad key, 422 off-host urls, 429 too many. Any code but 200 and 202 fails.
+
+### Yandex sitemaps
+
+`yandex.webmaster` adds the product's sitemaps to its host in Yandex Webmaster. `hostUrl` defaults to `https://{zone domain}`. The host must already be added and verified in Webmaster; a missing or unverified host fails, naming it.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+  yandex: { webmaster: { hostUrl: "https://example.com", sitemapUrls: ["https://example.com/sitemap.xml"] } },
+});
+```
+
+`infra set` lists the host's sitemaps and adds each one that is missing, so a rerun adds nothing. The OAuth token is `YANDEX_WEBMASTER_TOKEN` in `global`; seal it. To get one, register an app at `https://oauth.yandex.com` with the Webmaster permissions `webmaster:hostinfo` and `webmaster:verify`, open `https://oauth.yandex.com/authorize?response_type=token&client_id=<app id>` signed in as the host's owner, and store the token the page shows:
+
+```console
+$ bun repo env set YANDEX_WEBMASTER_TOKEN --scope global
+```
+
 ### Products
 
 A product is one `infra.config.ts`. Its name is its directory relative to the repo root, or `.` at the root.
@@ -335,8 +375,8 @@ $ infra gen web --check
 
 | Command         | What it does                                                                                                     |
 | --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `infra get`     | Reports the live Cloudflare account and zone, then Google, Apple, Microsoft and GitHub, against the config. Changes nothing. |
-| `infra set`     | Provisions bindings, Access and AI Search, applies the zone and its redirects, then applies Google, Apple, Microsoft and GitHub. A GitHub scope whose `clientId` is `STUB` opens a browser step. |
+| `infra get`     | Reports the live Cloudflare account and zone, then Google, Apple, Microsoft, GitHub, IndexNow and Yandex, against the config. Changes nothing. |
+| `infra set`     | Provisions bindings, Access and AI Search, applies the zone and its redirects, then applies Google, Apple, Microsoft, GitHub, IndexNow and Yandex. A GitHub scope whose `clientId` is `STUB` opens a browser step. |
 | `infra zone-get`| Reports the zone: rules, drift, declared bindings, R2, AI Search and Turnstile.                                   |
 | `infra zone-set`| Applies the zone settings and the generated zone and locale redirects only.                                      |
 | `infra gen`     | Writes each Worker package's `.cloudflare/wrangler.<scope>.json` and `.dev.vars.<scope>`, and the `database.migrate.config.ts` beside each D1 migrations dir whose `migrations` names a `database`. `--check` writes nothing and fails on drift. |
@@ -459,9 +499,24 @@ infra set: apps/web: github.oauth.prod has clientId "STUB" and needs the browser
 
 `infra get` looks each app up by its slug (the app name lowercased, with dashes) on the public GitHub API, with no token. It reports whether the app exists, whether its client id matches the config, and whether the env has `GITHUB_CLIENT_SECRET`.
 
+#### IndexNow and Yandex
+
+`infra set` checks the IndexNow key file, then pushes every sitemap URL on the host to IndexNow, and adds each Yandex Webmaster sitemap the host is missing. `infra get` changes nothing: it reports whether the key file serves the key and how many URLs the sitemaps hold, then whether the Yandex host is verified and each sitemap added or missing:
+
+```console
+ IndexNow: apps/web
+  Key file https://example.com/0f3c9a1e-7b2d-4c5e.txt: served ✓
+  Sitemap URLs: 42
+
+ Yandex: apps/web
+  Host https://example.com/: verified ✓
+  Sitemaps:
+    https://example.com/sitemap.xml: added ✓
+```
+
 ### Keys
 
-`infra get` and `infra set` read `CLOUDFLARE_ACCOUNT_ID` and the account credentials from `env.global`. They read `APPLE_PRIVATE_KEY`, `MICROSOFT_CLIENT_SECRET` and `GITHUB_CLIENT_SECRET` per scope, and `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` and `MICROSOFT_GRAPH_API_TOKEN` from `global`. A missing key prints its fix line:
+`infra get` and `infra set` read `CLOUDFLARE_ACCOUNT_ID` and the account credentials from `env.global`. They read `APPLE_PRIVATE_KEY`, `MICROSOFT_CLIENT_SECRET` and `GITHUB_CLIENT_SECRET` per scope, and `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`, `MICROSOFT_GRAPH_API_TOKEN` and `YANDEX_WEBMASTER_TOKEN` from `global`. A missing key prints its fix line:
 
 ```console
 infra set: apps/web: APPLE_PRIVATE_KEY has no prod value; run bun repo env set APPLE_PRIVATE_KEY --scope prod

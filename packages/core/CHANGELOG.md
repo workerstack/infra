@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `infra loc` runs a product's Workers and apps behind one local edge
 - `infra.worker` builds a Worker's whole `cloudflare.config.ts` from one call, and `infra gen` writes each database's `database.migrate.config.ts`
 - `github.oauth`: `infra set` creates a GitHub sign-in App by the manifest flow in the browser, and `infra get` checks it
+- IndexNow: `infra set` pushes the sitemaps' URLs to IndexNow after checking the key file, and Yandex: it adds each missing sitemap in Yandex Webmaster; `infra get` reports both
 
 ### Changed
 

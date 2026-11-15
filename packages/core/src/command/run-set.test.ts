@@ -73,3 +73,17 @@ it("set with nothing provisioned writes no file and no secrets", async () => {
   expect(await runSet([], testHost([bare]).host, deps)).toBe(0);
   expect(trace.calls).toStrictEqual([]);
 });
+
+it("set applies IndexNow and Yandex after GitHub, with the given host and the zone domain", async () => {
+  const { deps, trace } = fakeSetDeps({ [FILE]: CONFIG }, results);
+
+  const site = product("apps/web", {
+    cloudflare: cloudflareConfig(),
+    github: { oauth: {} },
+    indexNow: { host: "www.example.com", key: "abcd1234-key", sitemapUrls: [] },
+    yandex: { webmaster: { sitemapUrls: [] } },
+  });
+
+  expect(await runSet([], testHost([site]).host, deps)).toBe(0);
+  expect(trace.calls.slice(-5, -2)).toStrictEqual(["github", "indexnow www.example.com", "yandex https://example.com"]);
+});
