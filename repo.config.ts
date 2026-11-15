@@ -11,4 +11,5 @@ export default defineConfig({
     defaultStrategy: "spawn-fast",
     hosts: ["claude", "codex", "antigravity", "grok", "cursor"],
   },
+  workflow: "main",
 });
