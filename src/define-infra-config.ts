@@ -40,8 +40,21 @@ export function defineInfraConfig<const B extends Record<string, EnvBindings>, c
   return result;
 }
 
+// A dir of `local.apps`: relative to the product root and inside it, listed once.
+function checkApp(dir: string, apps: readonly string[]): void {
+  if (dir === "") throw new Error("local.apps has an empty dir; name each app by its dir under the product root");
+
+  if (dir.startsWith("/")) throw new Error(`local.apps dir ${dir} is absolute; name it relative to the product root`);
+
+  if (dir.split("/").includes("..")) throw new Error(`local.apps dir ${dir} leaves the product root`);
+
+  if (apps.indexOf(dir) !== apps.lastIndexOf(dir)) throw new Error(`local.apps names ${dir} twice`);
+}
+
 function checkedLocal(local: LocalConfig): LocalConfig {
   if (!LOCAL_HOST.test(local.host)) throw new Error(`local.host ${local.host} is not one name under .localhost`);
+
+  for (const dir of local.apps ?? []) checkApp(dir, local.apps ?? []);
 
   return local;
 }

@@ -5,6 +5,11 @@
  * or with the port it fell back to). No port is configured anywhere.
  */
 export type LocalConfig = {
+  /**
+   * The Vite packages `infra loc` runs in their own `vite dev`, as dirs relative to the product root (`web`). A
+   * package on Cloudflare's Vite plugin that is not listed is left out of the stack.
+   */
+  apps?: readonly string[];
   host: string;
   vars: (origin: URL) => Record<string, string>;
 };

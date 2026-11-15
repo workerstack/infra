@@ -41,6 +41,8 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
    * root.
    */
   readonly localeApps: readonly string[];
+  /** The Vite packages the local stack runs in their own `vite dev` (`local.apps`), relative to the product root. */
+  readonly localApps: readonly string[];
   /** The product's portless host in local (`acme.localhost`), when its infra has a local block. */
   readonly localHost: string | undefined;
   /**

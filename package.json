@@ -42,6 +42,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./local": {
+      "types": "./dist/local.d.ts",
+      "default": "./dist/local.js"
+    },
     "./package.json": "./package.json",
     "./references/*": "./references/*"
   },

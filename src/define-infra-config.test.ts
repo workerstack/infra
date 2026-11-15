@@ -89,6 +89,18 @@ it("rejects a local host that is not one name under .localhost", () => {
   );
 });
 
+function withApps(apps: string[]) {
+  return () => defineInfraConfig({ env, local: { apps, host: "example.localhost", vars: () => ({}) } });
+}
+
+it("keeps local.apps and rejects an empty, absolute, outside or repeated dir", () => {
+  expect(withApps(["web", "apps/site"])().local?.apps).toStrictEqual(["web", "apps/site"]);
+  expect(withApps([""])).toThrow("local.apps has an empty dir");
+  expect(withApps(["/web"])).toThrow("local.apps dir /web is absolute; name it relative to the product root");
+  expect(withApps(["../web"])).toThrow("local.apps dir ../web leaves the product root");
+  expect(withApps(["web", "web"])).toThrow("local.apps names web twice");
+});
+
 it("names the path and reason of a bad zone field", () => {
   expect(() =>
     defineInfraConfig({

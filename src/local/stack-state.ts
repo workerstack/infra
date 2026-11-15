@@ -6,7 +6,7 @@ import * as z from "zod";
 import { ERRNO_NOT_PERMITTED } from "./errno-not-permitted.constants.ts";
 import { LOCAL_STACK_FILE } from "./local-stack-file.constants.ts";
 
-type LocalStack = {
+export type LocalStack = {
   /** The edge's bound origin: `http://example.localhost`, or with the port it fell back to. */
   origin: string;
   /** The launcher's pid, so a file a crash left behind reads as no stack. */

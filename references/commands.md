@@ -45,6 +45,38 @@ A failing product prints `infra <command>: <product>: <message>`. The rest still
 infra zone-get: apps/web: no cloudflare zone in the config
 ```
 
+## Local stack
+
+```console
+$ infra loc [name] [--only dir,...] [--with dir,...]
+local stack at http://example.localhost
+  http://example.localhost
+  workers  http://127.0.0.1:41000  127.0.0.1:41001  api
+  web      http://127.0.0.1:41002  127.0.0.1:41003  web
+  state .../apps/web/.wrangler/state
+  registry .../apps/web/.wrangler/loc/registry
+```
+
+`infra loc` runs one product until Ctrl-C or SIGTERM. With no name it runs the product holding the current dir. The product needs a `local` block.
+
+- **Workers.** One `wrangler dev` under Node runs every Worker behind a dispatcher. Each Worker uses its generated `.cloudflare/wrangler.local.json`.
+- **Apps.** Each dir in `local.apps` runs in its own `bun x vite dev`.
+- **Containers.** A container Worker joins only with `--with` and needs Docker.
+- **Vite packages not in `local.apps`.** They are left out.
+- **`--only`.** Narrows the stack to the named dirs.
+- **The edge.** It listens on the local host's port 80, or on a free port with the reason when 80 is taken. Each request goes to the Worker or app whose prod route Cloudflare would pick. A request on no route gets a 404 that lists the hosts. A request for a package left out gets a page naming it.
+- **Before anything starts.** The command writes `.wrangler/loc/stack.json` with the origin, then runs `infra gen` for that origin.
+- **Stopping.** A stop, or any child that exits, stops every process group. It removes the state and lock files. A child that exits prints its last lines and exits 1.
+- **After a killed run.** The next start stops whatever the lock still names.
+
+`--all`, a second name or an unknown flag prints `usage: infra loc [name] [--only dir,...] [--with dir,...]` and exits 2. A refusal exits 1:
+
+```console
+infra loc: apps/web: no local block in its infra config, so it has no local stack
+infra loc: apps/web: --only nope: not in the stack (in it: api, web)
+infra loc: apps/web: A local apps/web stack already runs from this checkout (pid 4242, http://example.localhost); stop it first
+```
+
 ## Databases
 
 ```console

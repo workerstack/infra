@@ -1,0 +1,1 @@
+{ "name": "stack-web", "private": true, "devDependencies": { "@cloudflare/vite-plugin": "*" } }
