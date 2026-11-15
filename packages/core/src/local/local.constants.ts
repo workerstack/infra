@@ -81,6 +81,9 @@ export const STAT_FIELDS_OFFSET = 2;
 /** Field 5 (pgrp) and field 22 (starttime) of /proc/<pid>/stat, counted from field 3. */
 export const STAT_PGRP_AT = 2;
 
+/** Field 4 (ppid) of /proc/<pid>/stat, counted from field 3. */
+export const STAT_PPID_AT = 1;
+
 export const STAT_START_AT = 19;
 
 /** A /proc entry that is a process. */
@@ -102,3 +105,30 @@ export const REGISTRY_ENV_KEYS = ["MINIFLARE_REGISTRY_PATH", "WRANGLER_REGISTRY_
 
 /** The binary a `node` that is really Bun resolves to. */
 export const BUN_BINARY = "bun";
+
+/** `ps` on darwin: one line per process, `pid ppid pgid lstart command`, without a header. */
+export const PS_FORMAT = "pid=,ppid=,pgid=,lstart=,command=";
+
+/** One `ps` line: pid, ppid, pgid, the fixed 24-char lstart and the command, which may hold spaces and parens. */
+export const PS_LINE: RegExp =
+  /^\s*(?<pid>\d+)\s+(?<parent>\d+)\s+(?<group>\d+)\s+(?<lstart>(?:\S+\s+){3}\S+\s+\d{4})\s+(?<cmdline>.*)$/;
+
+/** PowerShell on win32: the flags that run one command quietly, and the columns and JSON shape of a process row. */
+export const POWERSHELL_FLAGS: readonly string[] = ["-NoProfile", "-NonInteractive", "-Command"];
+
+export const WIN32_COLUMNS =
+  "Select-Object ProcessId,ParentProcessId,CreationDate,CommandLine | ConvertTo-Json -Compress";
+
+/** PowerShell 5.1 writes a CIM date as `/Date(<epoch ms>)/`. */
+export const CIM_DATE_MS: RegExp = /Date\((-?\d+)\)/;
+
+/** The most a process probe may print, and how long it may run. */
+export const TOOL_MAX_BUFFER = 67_108_864;
+
+export const TOOL_TIMEOUT_MS = 30_000;
+
+/** The line ending of a probe's output, either kind. */
+export const LINE_BREAK: RegExp = /\r?\n/;
+
+/** `ps` prints lstart with English month and day names only in the C locale. */
+export const PS_LOCALE = "C";

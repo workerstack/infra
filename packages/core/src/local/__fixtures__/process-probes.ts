@@ -1,7 +1,8 @@
-import { readdirSync, readFileSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
 
 import type { Child } from "../child.ts";
+import { membersOf } from "../members-of.ts";
+import { readProcessTable } from "../read-process-table.ts";
 import { spawnGroup } from "../spawn-group.ts";
 import { stopGroups } from "../stop-groups.ts";
 
@@ -16,20 +17,9 @@ export function alive(pid: number): boolean {
   }
 }
 
-/** The pids in a process group, from /proc. */
+/** The pids in a process group (on win32, a process and its descendants). */
 export function groupPids(pgid: number): number[] {
-  return readdirSync("/proc")
-    .filter((entry) => /^\d+$/.test(entry))
-    .filter((pid) => {
-      try {
-        const stat = readFileSync(`/proc/${pid}/stat`, "utf8");
-
-        return Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[2]) === pgid;
-      } catch {
-        return false;
-      }
-    })
-    .map(Number);
+  return membersOf(readProcessTable(), pgid).map((row) => row.pid);
 }
 
 /** Resolves once `check` holds, or after 5 s. */

@@ -1,31 +1,25 @@
-import { readdirSync, readFileSync, rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 
-import { cmdlineOf } from "./cmdline-of.ts";
-import { PID_ENTRY } from "./local.constants.ts";
 import { type LockedChild, lockSchema } from "./locked-child.ts";
-import { procStat } from "./proc-stat.ts";
+import { membersOf } from "./members-of.ts";
+import type { ProcessRow } from "./process-row.ts";
 import { readOrUndefined } from "./read-or-undefined.ts";
+import { readProcessTable } from "./read-process-table.ts";
 import { stopGroups } from "./stop-groups.ts";
 
 // A live group member started at or after the leader: a group's members all start after its leader, while the
 // leader's pid, once free, can lead a stranger's group only after all of them exited.
-function hasMembersSince(pgid: number, since: number): boolean {
-  return readdirSync("/proc")
-    .filter((entry) => PID_ENTRY.test(entry))
-    .some((entry) => {
-      const stat = procStat(Number(entry));
-
-      return stat !== undefined && stat.pgrp === pgid && stat.start >= since;
-    });
+function hasMembersSince(rows: readonly ProcessRow[], pgid: number, since: number): boolean {
+  return membersOf(rows, pgid).some((row) => row.start >= since);
 }
 
 // A live leader is the recorded one only with the same command line and start time; a gone one left its members.
-function isOrphan(child: LockedChild): boolean {
-  const leader = cmdlineOf(child.pid);
+function isOrphan(rows: readonly ProcessRow[], child: LockedChild): boolean {
+  const leader = rows.find((row) => row.pid === child.pid);
 
-  if (leader === undefined) return hasMembersSince(child.pgid, child.start);
+  if (leader === undefined) return hasMembersSince(rows, child.pgid, child.start);
 
-  return leader === child.cmdline && procStat(child.pid)?.start === child.start;
+  return leader.cmdline === child.cmdline && leader.start === child.start;
 }
 
 function parseLock(file: string, text: string): LockedChild[] {
@@ -45,6 +39,8 @@ export async function clearOrphans(file: string): Promise<void> {
 
   if (text === undefined) return;
 
-  await stopGroups(parseLock(file, text).filter((child) => isOrphan(child)));
+  const rows = readProcessTable();
+
+  await stopGroups(parseLock(file, text).filter((child) => isOrphan(rows, child)));
   rmSync(file, { force: true });
 }

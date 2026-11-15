@@ -44,7 +44,7 @@ describe("child process groups", () => {
     const child = await start("sleeper", "sleep 1000; true");
 
     expect(child.pgid).toBe(child.pid);
-    expect(child.cmdline).toBe("sh\0-c\0sleep 1000; true");
+    expect(child.cmdline).toBe("sh -c sleep 1000; true");
   });
 
   it("stops a child and its grandchild", async () => {

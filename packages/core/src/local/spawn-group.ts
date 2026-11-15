@@ -3,11 +3,10 @@ import { createInterface } from "node:readline";
 
 import type { ChildEnv } from "../child-env.ts";
 import type { Child, ChildExit, LineSink } from "./child.ts";
-import { cmdlineOf } from "./cmdline-of.ts";
 import { execedCmdline } from "./execed-cmdline.ts";
 import { TAIL_LINES } from "./local.constants.ts";
 import { printLine } from "./print-line.ts";
-import { procStat } from "./proc-stat.ts";
+import { processOf } from "./process-of.ts";
 
 /** One child to start: its argv, where, with what env, its name in output and where its lines go. */
 type GroupSpec = { cmd: readonly string[]; cwd: string; env: ChildEnv; name: string; onLine?: LineSink | undefined };
@@ -55,7 +54,7 @@ export async function spawnGroup(spec: GroupSpec): Promise<Child> {
     });
   });
 
-  const cmdline = await execedCmdline(() => cmdlineOf(pid), cmdlineOf(process.pid), pid);
+  const cmdline = await execedCmdline(() => processOf(pid)?.cmdline, processOf(process.pid)?.cmdline, pid);
 
-  return { cmdline, exited, lastLines, name: spec.name, pgid: pid, pid, start: procStat(pid)?.start ?? 0 };
+  return { cmdline, exited, lastLines, name: spec.name, pgid: pid, pid, start: processOf(pid)?.start ?? 0 };
 }

@@ -35,7 +35,7 @@ describe("orphans of a live leader", () => {
 
     const orphanPids = groupPids(orphan.pgid);
 
-    writeLock(lock, [orphan, { ...stranger, cmdline: "sh\0-c\0something else" }]);
+    writeLock(lock, [orphan, { ...stranger, cmdline: "sh -c something else" }]);
     await clearOrphans(lock);
 
     expect(orphanPids.filter((pid) => alive(pid))).toStrictEqual([]);
