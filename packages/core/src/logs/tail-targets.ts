@@ -1,7 +1,8 @@
 import { appendFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 
 import { FAILURE_EXIT } from "../failure-exit.constants.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { dumpDir } from "../workers/dump-dir.ts";
 import { stamp } from "../workers/stamp.ts";
 import type { WorkerTarget } from "../workers/worker-target.ts";
@@ -38,7 +39,9 @@ export async function tailTargets(targets: WorkerTarget[], run: TailRun): Promis
   const until = args.minutes === 0 ? "until killed" : `${args.minutes}m`;
 
   appendFileSync(file, "");
-  host.stdout(`tail ${targets.map((target) => target.scriptName).join(", ")} (${until}) → ${relative(run.root, file)}`);
+  const names = targets.map((target) => target.scriptName).join(", ");
+
+  host.stdout(`tail ${names} (${until}) → ${posixRelative(run.root, file)}`);
 
   const sink = { dump: (line: string) => appendFileSync(file, `${line}\n`), stderr: host.stderr, stdout: host.stdout };
   const children = launches.map((launch) => run.deps.spawn(launch));

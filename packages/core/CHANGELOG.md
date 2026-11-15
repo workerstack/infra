@@ -32,3 +32,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `infra loc` reads processes and ports on macOS and Windows too, so a stale lock no longer crashes startup there and a busy port names its owner; a stack is stopped with `taskkill /T` on Windows.
 - `infra` starts `cf`, `wrangler` and the other peer tools under the runtime their bin names, so they start on Windows, where a bin file cannot be spawned itself.
 - On macOS, `infra loc` reads full process command lines, so a stale stack started from a long command still matches its lock and is cleared.
+- Messages print paths from the product root with / on Windows too: a missing locale-redirects.json, a missing database.migrate.config.ts, and the dump file of infra logs tail and query no longer show backslashes, and a locale app nested in a subdir matches its zone entry.
+- `infra loc` runs each app's installed vite through its runtime instead of `bun x vite`, so apps start on Windows; on Windows a stack stops with `taskkill /T /F` at once, since a windowless process cannot be asked to close.

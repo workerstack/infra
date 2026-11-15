@@ -1,7 +1,8 @@
 import { existsSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, posix } from "node:path";
 
 import type { Product } from "../products.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { MIGRATE_CONFIG_FILE } from "./migrate-config-file.constants.ts";
 
 function nearest(root: string, at: string): string | undefined {
@@ -15,7 +16,7 @@ export function migrationsCwd(product: Product, dir: string): string {
   const found = nearest(product.root, dir);
 
   if (found === undefined)
-    throw new Error(`no ${MIGRATE_CONFIG_FILE} above ${join(product.name, relative(product.root, dir))}`);
+    throw new Error(`no ${MIGRATE_CONFIG_FILE} above ${posix.join(product.name, posixRelative(product.root, dir))}`);
 
   return found;
 }

@@ -1,4 +1,4 @@
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -84,19 +84,20 @@ const WORKERS = {
   },
 };
 
-// A `vite` that answers `app <mark> <path>` on the port it is given, as the app's `bun x vite dev` would serve.
+// A `vite` bin that answers `app <mark> <path>` on the port it is given, as the app's `vite dev` would serve.
 const FAKE_VITE = `#!/usr/bin/env node
 const http = require("node:http")
 const port = Number(process.argv[process.argv.indexOf("--port") + 1])
 http.createServer((request, response) => response.end("app " + process.env.FX_MARK + " " + request.url)).listen(port, "127.0.0.1")
 `;
 
+// The fake as the app's installed vite package, its bin declared the way vite declares it.
 function writeApp(productRoot: string, mark: string): void {
-  const bin = join(productRoot, "e/node_modules/.bin");
+  const pkg = join(productRoot, "e/node_modules/vite");
 
-  mkdirSync(bin, { recursive: true });
-  writeFileSync(join(bin, "vite"), FAKE_VITE.replace("process.env.FX_MARK", JSON.stringify(mark)));
-  chmodSync(join(bin, "vite"), 0o755);
+  mkdirSync(join(pkg, "bin"), { recursive: true });
+  writeFileSync(join(pkg, "package.json"), JSON.stringify({ bin: { vite: "bin/vite.js" }, name: "vite" }));
+  writeFileSync(join(pkg, "bin/vite.js"), FAKE_VITE.replace("process.env.FX_MARK", JSON.stringify(mark)));
 }
 
 /**

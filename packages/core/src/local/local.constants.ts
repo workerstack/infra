@@ -138,3 +138,6 @@ export const LINUX: NodeJS.Platform = "linux";
 
 /** See LINUX. */
 export const WIN32: NodeJS.Platform = "win32";
+
+/** The package, and its binary, that serves an app in the stack. */
+export const VITE = "vite";

@@ -4,8 +4,11 @@ import type { CfFetch } from "./cf-fetch.ts";
 import { cfRequest } from "./cf-request.ts";
 import type { CfBody } from "./cf-request.ts";
 
+/** A Cloudflare API client bound to one zone. */
 export type CfClient = {
+  /** Sends one API call and resolves the result. Rejects when Cloudflare reports a failure. */
   request: <T = unknown>(method: string, path: string, body?: CfBody) => Promise<T>;
+  /** The id of the zone this client works on. */
   zoneId: string;
 };
 

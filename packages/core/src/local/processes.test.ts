@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { SLEEP, alive, groupPids, nodeGroups, parentOf, reportedLine, until } from "./__fixtures__/process-probes.ts";
+import {
+  SLEEP,
+  alive,
+  groupPids,
+  nodeGroups,
+  parentOf,
+  reportedLine,
+  scriptPids,
+  until,
+} from "./__fixtures__/process-probes.ts";
 import { execedCmdline } from "./execed-cmdline.ts";
 import { stopGroups } from "./stop-groups.ts";
 
@@ -50,11 +59,10 @@ describe("child process groups", () => {
     const child = await start("parent", parentOf(parentOf(SLEEP)));
 
     // The child, its child and its grandchild.
-    await until(() => groupPids(child.pgid).length === 3);
+    await until(() => scriptPids(child.pgid).length === 3);
+    expect(scriptPids(child.pgid)).toHaveLength(3);
 
     const pids = groupPids(child.pgid);
-
-    expect(pids).toHaveLength(3);
 
     await stopGroups([child]);
 

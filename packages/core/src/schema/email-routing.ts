@@ -19,9 +19,22 @@ function emailRoutingActionSchema(): z.ZodType<EmailRoutingAction, EmailRoutingA
  * (custom addresses like contact@ stay on their own rules).
  */
 export type EmailRoutingAction =
-  | { type: "drop" }
-  | { to: string; type: "forward" }
-  | { type: "worker"; worker: string };
+  | {
+      /** Discards the mail. */
+      type: "drop";
+    }
+  | {
+      /** The verified address to forward to. */
+      to: string;
+      /** Forwards the mail to an address. */
+      type: "forward";
+    }
+  | {
+      /** Hands the mail to a Worker. */
+      type: "worker";
+      /** The name of the Worker that receives the mail. */
+      worker: string;
+    };
 
 function emailRoutingRuleSchema(): z.ZodType<EmailRoutingRule, EmailRoutingRuleInput> {
   return z.object({
@@ -46,20 +59,49 @@ export function emailRoutingConfigSchema(): z.ZodType<EmailRoutingConfig, EmailR
 
 /** One custom-address Email Routing rule: a matcher and the action it takes. */
 export type EmailRoutingRuleInput = {
+  /** What happens to the mail the rule matches. */
   action: EmailRoutingAction;
+  /** Whether the rule is active. Defaults to true. */
   enabled?: boolean | undefined;
-  match: { type: "all" } | { to: string; type: "literal" };
+  /** Which recipient the rule matches. */
+  match:
+    | {
+        /** Matches every recipient. */
+        type: "all";
+      }
+    | {
+        /** The exact address to match. */
+        to: string;
+        /** Matches one exact address. */
+        type: "literal";
+      };
+  /** The rule's name in the Cloudflare dashboard. */
   name: string;
 };
 
 /** One custom-address Email Routing rule: a matcher and the action it takes. */
 export type EmailRoutingRule = {
+  /** What happens to the mail the rule matches. */
   action: EmailRoutingAction;
+  /** Whether the rule is active. */
   enabled: boolean;
-  match: { type: "all" } | { to: string; type: "literal" };
+  /** Which recipient the rule matches. */
+  match:
+    | {
+        /** Matches every recipient. */
+        type: "all";
+      }
+    | {
+        /** The exact address to match. */
+        to: string;
+        /** Matches one exact address. */
+        type: "literal";
+      };
+  /** The rule's name in the Cloudflare dashboard. */
   name: string;
 };
 
+/** Email Routing for the zone: the catch-all action and the custom-address rules. */
 export type EmailRoutingConfigInput = {
   /** Omit to leave the live catch-all untouched. */
   catchAll?: EmailRoutingAction | undefined;
@@ -67,6 +109,7 @@ export type EmailRoutingConfigInput = {
   rules?: EmailRoutingRuleInput[] | undefined;
 };
 
+/** `EmailRoutingConfigInput` once parsed: `rules` is always set. */
 export type EmailRoutingConfig = {
   /** Omit to leave the live catch-all untouched. */
   catchAll?: EmailRoutingAction | undefined;

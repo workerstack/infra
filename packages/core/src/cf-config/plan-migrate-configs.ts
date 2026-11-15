@@ -1,8 +1,9 @@
-import { dirname, join, relative, sep } from "node:path";
+import { dirname, join } from "node:path";
 
 import { MIGRATE_CONFIG_FILE } from "../db/migrate-config-file.constants.ts";
 import type { InfraScope } from "../schema/infra.ts";
 import { LOCAL_SCOPE } from "../shared/local-scope.constants.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { GENERATED_DIR, MIGRATE_CONFIG_HEADER } from "./cf-config.constants.ts";
 import type { JsonObject } from "./json-object.ts";
 import { objectsAt } from "./objects-at.ts";
@@ -34,7 +35,7 @@ function ownedOf(input: PackageInput, wrangler: JsonObject): Owned[] {
 }
 
 function posix(from: string, to: string): string {
-  const path = relative(from, to).split(sep).join("/");
+  const path = posixRelative(from, to);
 
   return path.startsWith(".") ? path : `./${path}`;
 }

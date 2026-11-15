@@ -1,7 +1,8 @@
-import { cpSync, globSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Product } from "../../products.ts";
+import { absoluteImports } from "../../shared/__fixtures__/absolute-imports.ts";
 import { fakeInfraEnv } from "../../shared/__fixtures__/fake-infra-env.ts";
 
 const SRC = join(import.meta.dirname, "../..");
@@ -25,11 +26,7 @@ export function copyProduct(): CopiedProduct {
   made.push(root);
   cpSync(join(import.meta.dirname, "product"), productRoot, { recursive: true });
 
-  for (const file of globSync("**/*.ts", { cwd: productRoot })) {
-    const path = join(productRoot, file);
-
-    writeFileSync(path, readFileSync(path, "utf8").replaceAll('from "../../../', `from "${SRC}/`));
-  }
+  absoluteImports(productRoot, "../../../", SRC);
 
   const config = { env: fakeInfraEnv() };
   const product = { config, configFile: join(productRoot, "infra.config.ts"), name: "apps/web", root: productRoot };

@@ -22,9 +22,13 @@ type EnvView = Readonly<Record<string, string | undefined>>;
  * config load. With no `sealedKeys`, no key is sealed.
  */
 export type InfraEnv = {
+  /** The `dev` scope's values. */
   readonly dev: EnvView;
+  /** The account-wide values, such as the Cloudflare credentials. */
   readonly global: EnvView;
+  /** The `local` scope's values. */
   readonly local: EnvView;
+  /** The `prod` scope's values. */
   readonly prod: EnvView;
   /** The keys sealed in a scope: secret values that never go into a plain var. */
   sealedKeys?(scope: InfraScope): ReadonlySet<string>;
@@ -67,13 +71,22 @@ export type InfraConfig<
   _B extends Record<string, EnvBindings> = Record<string, EnvBindings>,
   V extends InfraEnv = InfraEnv,
 > = {
+  /** Apple provider settings, as given. */
   apple?: AppleConfig;
+  /** Cloudflare provider settings with defaults filled in. */
   cloudflare?: CloudflareConfig;
+  /** The product env, kept by reference. */
   env: V;
+  /** GitHub provider settings, as given. */
   github?: GithubConfig;
+  /** Google provider settings, as given. */
   google?: GoogleConfig;
+  /** IndexNow provider settings, as given. */
   indexNow?: IndexNowConfig;
+  /** The local stack settings, as given. */
   local?: LocalConfig;
+  /** Microsoft provider settings, as given. */
   microsoft?: MicrosoftConfig;
+  /** Yandex provider settings, as given. */
   yandex?: YandexConfig;
 };

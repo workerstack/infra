@@ -15,11 +15,17 @@ import { parseZoneConfig } from "./schema/zone.ts";
 // and its own subdomains (`api.example.localhost`) stay under it.
 const LOCAL_HOST = /^[a-z0-9-]+\.localhost$/;
 
-// The config, its bindings by name, and the kit typed to those names and the env's keys.
+/** The config, its bindings by name, and the kit typed to those names and the env's keys. */
 type Infra<B extends Record<string, EnvBindings>, V extends InfraEnv, D extends Partial<WorkerConfig>> = InfraConfig<
   B,
   V
-> & { cloudflare?: { bindings: B } } & CfKit<KeysOf<B, V>, D>;
+> & {
+  /** The Cloudflare config, with the bindings as declared. */
+  cloudflare?: {
+    /** The worker binding sets by scope, with their literal names. */
+    bindings: B;
+  };
+} & CfKit<KeysOf<B, V>, D>;
 
 /**
  * A product's infra config and its kit in one value: what `infra.config.ts` default-exports and each Worker's

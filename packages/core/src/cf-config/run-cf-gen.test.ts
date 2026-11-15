@@ -5,6 +5,7 @@ import { afterEach, expect, it } from "vitest";
 
 import { LOCAL_STACK_FILE } from "../local/local-stack-file.constants.ts";
 import { logLines } from "../provision/__fixtures__/log-lines.ts";
+import { absoluteImports } from "../shared/__fixtures__/absolute-imports.ts";
 import { cleanCopies, copyProduct } from "./__fixtures__/copy-product.ts";
 import { fakeTypes } from "./__fixtures__/fake-types.ts";
 import { jsonObjectSchema } from "./json-object-schema.ts";
@@ -177,8 +178,9 @@ it(
   async () => {
     const { product } = copyProduct();
 
-    writeFileSync(join(product.root, "infra.config.ts"), LEAN_INFRA.replaceAll("../../../", `${SRC}/`));
+    writeFileSync(join(product.root, "infra.config.ts"), LEAN_INFRA);
     writeFileSync(join(product.root, "api/cloudflare.config.ts"), LEAN_WORKER);
+    absoluteImports(product.root, "../../../", SRC);
     await runCfGen({ check: false, log: logLines().log, product, runTypes });
 
     const ids = json(join(product.root, "ratelimit-ids.json"));

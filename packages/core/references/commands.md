@@ -60,7 +60,7 @@ local stack at http://example.localhost
 `infra loc` runs one product until Ctrl-C or SIGTERM. With no name it runs the product holding the current dir. The product needs a `local` block.
 
 - **Workers.** One `wrangler dev` under Node runs every Worker behind a dispatcher. Each Worker uses its generated `.cloudflare/wrangler.local.json`.
-- **Apps.** Each dir in `local.apps` runs in its own `bun x vite dev`.
+- **Apps.** Each dir in `local.apps` runs in its own `vite dev`, the vite installed for that app.
 - **Containers.** A container Worker joins only with `--with` and needs Docker.
 - **Vite packages not in `local.apps`.** They are left out.
 - **`--only`.** Narrows the stack to the named dirs.

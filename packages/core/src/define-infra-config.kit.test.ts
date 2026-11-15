@@ -109,7 +109,7 @@ it("puts the registry at the product root it is handed, else the one above the c
   }
 
   infra[PRODUCT_ROOT]("/repo/apps/web");
-  expect(infra.ratelimitFile()).toBe("/repo/apps/web/ratelimit-ids.json");
+  expect(infra.ratelimitFile()).toBe(join("/repo/apps/web", "ratelimit-ids.json"));
 });
 
 it("reads a defineEnv instance's views and sealed keys through the env it returns", () => {

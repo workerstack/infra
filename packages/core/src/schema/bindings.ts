@@ -1,18 +1,24 @@
 import type { Unstable_Config } from "wrangler";
 
-// Binding value types derived from wrangler's Unstable_Config — correct by construction
+/** Wrangler's own config type, the source the binding value types below derive from. */
 type WranglerConfig = Unstable_Config;
 
+/** A Wrangler binding entry without its `binding` name, which the record key supplies. */
 type OmitBinding<T> = Omit<T, "binding">;
 
+/** A database binding's options, keyed by the name a Worker reads it as. */
 type D1Binding = OmitBinding<WranglerConfig["d1_databases"][number]>;
 
+/** A KV namespace binding's options, keyed by the name a Worker reads it as. */
 type KVBinding = OmitBinding<WranglerConfig["kv_namespaces"][number]>;
 
+/** An R2 bucket binding's Wrangler options, keyed by the name a Worker reads it as. */
 type R2BindingBase = OmitBinding<WranglerConfig["r2_buckets"][number]>;
 
+/** A queue producer binding's options, keyed by the name a Worker reads it as. */
 type QueueProducerBinding = OmitBinding<NonNullable<WranglerConfig["queues"]["producers"]>[number]>;
 
+/** An Analytics Engine dataset binding's options, keyed by the name a Worker reads it as. */
 type AnalyticsEngineBinding = OmitBinding<WranglerConfig["analytics_engine_datasets"][number]>;
 
 /**
@@ -56,6 +62,7 @@ export type AiSearchInstanceConfig = {
   dataSource: {
     /** Public sitemap URL (web-crawler) or R2 bucket name (r2). */
     source: string;
+    /** Where the instance reads from: a crawled sitemap or an R2 bucket. */
     type: "r2" | "web-crawler";
   };
   /** Max results returned per query. */
@@ -116,12 +123,13 @@ export type R2BucketConfig = {
   locationHint?: "apac" | "eeur" | "enam" | "oc" | "weur" | "wnam";
 };
 
+/** An R2 bucket binding with its provisioning config. */
 type R2Binding = R2BucketConfig & R2BindingBase;
 
 /**
- * Wrangler-compatible binding set for one environment (dev/staging/prod). infra verifies
- * each named resource exists in the CF account; it does NOT auto-create D1/KV/Queues —
- * those are created separately and referenced by ID/name here.
+ * Wrangler-compatible binding set for one scope. infra checks that each named resource
+ * exists in the Cloudflare account. It does not create databases, KV namespaces or queues:
+ * create those first and reference them by id or name here.
  */
 export type EnvBindings = {
   /** AI Search (AutoRAG) wrangler bindings — worker env name → instance name. */
@@ -133,9 +141,9 @@ export type EnvBindings = {
   ai_search_instances?: Record<string, AiSearchInstanceConfig>;
   /** Analytics Engine datasets — exist implicitly (auto-created on first write). */
   analytics_engine_datasets?: Record<string, AnalyticsEngineBinding>;
-  /** D1 SQLite databases. */
+  /** SQL databases by the name a Worker reads them as. */
   d1_databases?: Record<string, D1Binding>;
-  /** KV namespaces. */
+  /** KV namespaces by the name a Worker reads them as, each with its namespace id. */
   kv_namespaces?: Record<string, KVBinding>;
   /** Queue producers (consumers are declared per-worker in its cloudflare.config.ts). */
   queues?: Record<string, QueueProducerBinding>;

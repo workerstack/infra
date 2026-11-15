@@ -152,11 +152,13 @@ export type TransformRule = {
   pathExpression: string;
 };
 
+/** The zone's URL transform rules. */
 export type TransformConfigInput = {
   /** URL rewrite rules evaluated in order; first match wins. */
   urlRewrites?: TransformRuleInput[] | undefined;
 };
 
+/** `TransformConfigInput` once parsed: `urlRewrites` is always set. */
 export type TransformConfig = {
   /** URL rewrite rules evaluated in order; first match wins. */
   urlRewrites: TransformRule[];

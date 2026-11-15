@@ -35,14 +35,22 @@ function watch(end: "exit" | "ok" | "throw") {
   return { onSpawn, seen };
 }
 
-test("cf deploy reads a 0600 file that holds exactly the declared secrets", async () => {
+test("cf deploy reads a file that holds exactly the declared secrets", async () => {
   const { onSpawn, seen } = watch("ok");
   const { io } = fakeDeployIo({ onSpawn, secrets: SECRETS });
 
   expect(await deploy(REQUEST, io)).toBe(0);
   expect(seen).toHaveLength(1);
-  expect(seen[0]?.mode).toBe(OWNER_ONLY);
   expect(JSON.parse(seen[0]?.body ?? "")).toStrictEqual(SECRETS);
+});
+
+// Windows has no posix modes: stat reports 0666 whatever mode the file was written with.
+test.skipIf(process.platform === "win32")("the secrets file cf deploy reads is 0600", async () => {
+  const { onSpawn, seen } = watch("ok");
+  const { io } = fakeDeployIo({ onSpawn, secrets: SECRETS });
+
+  expect(await deploy(REQUEST, io)).toBe(0);
+  expect(seen[0]?.mode).toBe(OWNER_ONLY);
 });
 
 test.each(["ok", "exit", "throw"] as const)("the file is gone after a run that ends with %s", async (end) => {

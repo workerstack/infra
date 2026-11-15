@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+
 import { expect, it } from "vitest";
 
 import { fixtureConfig, fixtureEnv } from "../cf-kit/__fixtures__/kit-fixtures.ts";
@@ -23,7 +25,7 @@ it("writes a container's Dockerfile path absolute, and leaves a registry image a
   });
 
   expect(out["containers"]).toStrictEqual([
-    { image: "/repo/containers/Dockerfile", name: "box" },
+    { image: resolve("/repo/containers/Dockerfile"), name: "box" },
     { image: "registry.example.com/box", name: "r" },
   ]);
 });
@@ -42,9 +44,9 @@ it("writes main and assets absolute, the bundler keys, and the migrations dir of
   });
 
   expect(out).toStrictEqual({
-    assets: { directory: "/repo/apps/api/assets" },
+    assets: { directory: resolve(DIR, "assets") },
     d1_databases: [{ binding: "MAIN_DB", migrations_dir: "/repo/db/migrations" }, { binding: "OTHER" }],
-    main: "/repo/apps/api/src/index.ts",
+    main: resolve(DIR, "src/index.ts"),
     minify: true,
     name: "api-prod",
     upload_source_maps: false,

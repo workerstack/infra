@@ -43,10 +43,12 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "infra-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./local": {
+      "infra-source": "./src/local.ts",
       "types": "./dist/local.d.ts",
       "default": "./dist/local.js"
     },

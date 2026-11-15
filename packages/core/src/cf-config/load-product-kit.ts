@@ -1,17 +1,18 @@
-import { join, relative, sep } from "node:path";
+import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { PRODUCT_ROOT } from "../cf-kit/cf-kit.constants.ts";
 import type { CfKit } from "../cf-kit/cf-kit.ts";
 import { isCfKit } from "../cf-kit/is-cf-kit.ts";
 import { INFRA_CONFIG_FILE } from "../products.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { KIT_MOVED_MESSAGE } from "./cf-config.constants.ts";
 import { findInProduct } from "./find-in-product.ts";
 
 // A kit file from before `defineInfraConfig` built the kit: its options belong in `cloudflare.workers` now.
 function refuseKitFiles(productRoot: string): void {
   const moves = findInProduct(productRoot, "**/*.cf-kit.ts").map(
-    (file) => `${relative(productRoot, file).split(sep).join("/")}: ${KIT_MOVED_MESSAGE}`,
+    (file) => `${posixRelative(productRoot, file)}: ${KIT_MOVED_MESSAGE}`,
   );
 
   if (moves.length > 0) throw new Error(moves.join("\n"));

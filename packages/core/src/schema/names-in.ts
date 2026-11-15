@@ -1,9 +1,12 @@
 // `defineInfraConfig` types `bindings` as `Record<string, EnvBindings> & <the literal bindings>`; that index
 // signature would make every name a plain string, so it is dropped to keep the names.
+/** `T` without its string index signature, so only the declared keys remain. */
 type WithoutIndex<T> = { [K in keyof T as string extends K ? never : K]: T[K] };
 
+/** The binding sets of every scope in `B`, as one union. */
 type BindingsUnion<B> = WithoutIndex<B>[keyof WithoutIndex<B>];
 
+/** The names under field `F` in each member of `U`, or `never` where `F` is absent. */
 type FieldNames<U, F extends string> = U extends unknown
   ? F extends keyof U
     ? keyof NonNullable<U[F]> & string

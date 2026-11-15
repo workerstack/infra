@@ -31,15 +31,19 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
   [ALLOCATE_RATELIMITS]<T>(run: () => Promise<T>): Promise<T>;
   /** Takes the product root from the loader of `infra.config.ts`: where the unset rate-limit registry lives. */
   [PRODUCT_ROOT](root: string): void;
+  /** AI Search bindings by name for a scope. */
   aiSearch<N extends K["ai_search"]>(env: K["env"], ...names: N[]): Record<N, AiSearchBinding>;
+  /** Analytics Engine dataset bindings by name for a scope. */
   analytics<N extends K["analytics"]>(env: K["env"], ...names: N[]): Record<N, AnalyticsEngineDatasetBinding>;
   /** What every Worker of the product shares; a config spreads it first and overrides after. */
   readonly defaults: D;
+  /** Database bindings by name for a scope. */
   d1<N extends K["d1"]>(env: K["env"], ...names: N[]): Record<N, D1Binding>;
   /** The scope for a `--mode`; Vite's dev default, `development`, is `local`. */
   scope(mode: string | undefined): K["env"];
   /** Every scope the kit's Workers deploy or run as: what `infra gen` loops over. */
   readonly envs: readonly InfraScope[];
+  /** KV namespace bindings by name for a scope. */
   kv<N extends K["kv"]>(env: K["env"], ...names: N[]): Record<N, KvBinding>;
   /**
    * The package dirs the product's zone sends visitors from to their locale at the edge, relative to the product
@@ -55,16 +59,32 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
    * portless host with none running.
    */
   localUrlVars(origin?: string): Record<string, string>;
-  /** The migrations a D1 binding owns: its directory, owner Worker and `database` name; none for any other binding. */
-  migrations(binding: string): { database?: string; dir: string; owner: string } | undefined;
   /**
-   * The directory of the migrations a D1 binding owns, absolute: answered for the one Worker that owns them (by
+   * The migrations a database binding owns: its directory, owner Worker and `database` name; none for any other
+   * binding.
+   */
+  migrations(binding: string):
+    | {
+        /** The database name the migrations apply to. */
+        database?: string;
+        /** The absolute path of the migrations directory. */
+        dir: string;
+        /** The base name of the Worker that owns the migrations. */
+        owner: string;
+      }
+    | undefined;
+  /**
+   * The directory of the migrations a database binding owns, absolute: answered for the one Worker that owns them (by
    * its deployed name in `env`).
    */
   migrationsDir(env: K["env"], worker: string, binding: string): string | undefined;
+  /** The deployed name of a Worker: its base name with the scope's suffix. */
   name(base: string, env: K["env"]): string;
+  /** Queue producer bindings by name for a scope. */
   queue<N extends K["queue"]>(env: K["env"], ...names: N[]): Record<N, QueueBinding>;
+  /** Consumer triggers for the queues a Worker consumes, in a scope. */
   queueConsumers(env: K["env"], consumers: readonly QueueConsumerSpec<K["queue"]>[]): QueueConsumerTrigger[];
+  /** R2 bucket bindings by name for a scope. */
   r2<N extends K["r2"]>(env: K["env"], ...names: N[]): Record<N, R2Binding>;
   /**
    * The registry file the limiters' namespace ids live in: `cloudflare.workers.ratelimitIds`, else
@@ -77,6 +97,7 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
     env: K["env"],
     ...limits: RatelimitSpec<N>[]
   ): Record<N, RateLimitBinding>;
+  /** Fetch triggers for route patterns on a zone. */
   routes(patterns: readonly string[], zone: string): FetchTrigger[];
   /**
    * Secrets picked off the env: `secrets((env) => [env.API_KEY])`, the binding only. A key must be sealed in every
@@ -100,7 +121,10 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
   vars<E extends K["env"], R extends EnvKeyRef>(
     env: E,
     pick: KeyPick<K["vars"], R>,
-  ): Record<R["key"], TextBinding> & { ENVIRONMENT: TextBinding<E> };
+  ): Record<R["key"], TextBinding> & {
+    /** The scope's own `ENVIRONMENT` value, else the scope name. */
+    ENVIRONMENT: TextBinding<E>;
+  };
   /**
    * A Worker's whole config from its base name and the names of what it binds: what `defineConfig` of `cf/config`
    * takes, so a `cloudflare.config.ts` default-exports it as is. Built per mode: the defaults, the scoped name, each
@@ -110,7 +134,14 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
   worker(
     base: string,
     options: WorkerOptions<K> | ((scope: InfraScope) => WorkerOptions<K>),
-  ): ((context: { mode?: string }) => { worker: WorkerConfig }) & WorkerBuild;
+  ): ((context: {
+    /** The mode to build for, mapped to a scope by `scope`. */
+    mode?: string;
+  }) => {
+    /** The Worker's whole config. */
+    worker: WorkerConfig;
+  }) &
+    WorkerBuild;
   /** The product's Cloudflare zone (`acme.ai`), when its infra has one. */
   readonly zoneDomain: string | undefined;
 };

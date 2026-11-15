@@ -34,10 +34,16 @@ export type CloudflareConfigInput<
  * defaults populated (`bindings` always defined, zone schema fully resolved).
  */
 export type CloudflareConfig = {
+  /** Per-scope Access config. */
   access?: Partial<Record<InfraScope, CloudflareAccessEnv>> | undefined;
+  /** The worker binding set per scope. Empty when none is declared. */
   bindings: Record<string, EnvBindings>;
+  /** R2 S3-API credentials config. */
   r2?: CloudflareR2Credentials | undefined;
+  /** Per-scope Turnstile widget config. */
   turnstile?: Partial<Record<InfraScope, CloudflareTurnstileEnv>> | undefined;
+  /** What the product's Workers share. */
   workers?: CloudflareWorkers | undefined;
+  /** Zone-level config with defaults filled in. */
   zone: ZoneConfig;
 };

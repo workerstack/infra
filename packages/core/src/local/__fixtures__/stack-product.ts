@@ -1,7 +1,8 @@
-import { cpSync, globSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Product } from "../../products.ts";
+import { absoluteImports } from "../../shared/__fixtures__/absolute-imports.ts";
 import { fakeInfraEnv } from "../../shared/__fixtures__/fake-infra-env.ts";
 
 const SRC = join(import.meta.dirname, "../..");
@@ -23,16 +24,15 @@ export function stackProduct(apps: readonly string[] = ["web"]): Product {
   made.push(root);
   cpSync(join(import.meta.dirname, "stack-product"), productRoot, { recursive: true });
 
-  for (const file of globSync("**/*.ts", { cwd: productRoot })) {
-    const path = join(productRoot, file);
-    const text = readFileSync(path, "utf8").replaceAll('from "../../../', `from "${SRC}/`);
+  absoluteImports(productRoot, "../../../", SRC);
 
-    writeFileSync(path, text.replace('apps: ["web"]', `apps: ${JSON.stringify(apps)}`));
-  }
+  const configFile = join(productRoot, "infra.config.ts");
+
+  writeFileSync(configFile, readFileSync(configFile, "utf8").replace('apps: ["web"]', `apps: ${JSON.stringify(apps)}`));
 
   const local = { apps, host: "example.localhost", vars: () => ({}) };
 
-  return { config: { env: fakeInfraEnv(), local }, configFile: join(productRoot, "infra.config.ts"), name: "apps/web", root: productRoot };
+  return { config: { env: fakeInfraEnv(), local }, configFile, name: "apps/web", root: productRoot };
 }
 
 export function cleanStackProducts(): void {

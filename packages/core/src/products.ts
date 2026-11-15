@@ -5,7 +5,9 @@ import { pathToFileURL } from "node:url";
 import { PRODUCT_ROOT } from "./cf-kit/cf-kit.constants.ts";
 import { isCfKit } from "./cf-kit/is-cf-kit.ts";
 import type { InfraConfig } from "./schema/infra.ts";
+import { posixRelative } from "./shared/posix-relative.ts";
 
+/** The file name that marks a product: its config, default-exported from `defineInfraConfig`. */
 export const INFRA_CONFIG_FILE = "infra.config.ts";
 
 // A directory name, or a path ending in one, that the scan never enters.
@@ -13,15 +15,42 @@ const SKIPPED_DIR = /(?:^|\/)(?:node_modules|\.git|\.worktrees|dist|\.tmp|\.repo
 
 /** One product: `name` is its config's directory relative to the scan root, posix (`.` at the root). */
 export type Product = {
+  /** The config's directory relative to the scan root, in posix form. */
   name: string;
+  /** The absolute path of the product root. */
   root: string;
+  /** The absolute path of the product's `infra.config.ts`. */
   configFile: string;
+  /** The product's parsed config. */
   config: InfraConfig;
 };
 
-export type Selection = { ok: true; products: Product[] } | { ok: false; error: string };
+/** The outcome of choosing products: the chosen ones, or the reason none could be chosen. */
+export type Selection =
+  | {
+      /** Marks a successful choice. */
+      ok: true;
+      /** The chosen products. */
+      products: Product[];
+    }
+  | {
+      /** Marks a failed choice. */
+      ok: false;
+      /** Says why no product could be chosen. */
+      error: string;
+    };
 
-export type ProductTarget = { all: true } | { name: string } | undefined;
+/** Which products a command acts on: all, one by name, or `undefined` to infer from the working directory. */
+export type ProductTarget =
+  | {
+      /** Selects every product. */
+      all: true;
+    }
+  | {
+      /** The name of the one product to select. */
+      name: string;
+    }
+  | undefined;
 
 /** Imports every `infra.config.ts` under `root` outside the skipped directories; sorted by name. */
 export async function discoverProducts(root: string): Promise<Product[]> {
@@ -47,7 +76,7 @@ async function loadProduct(root: string, file: string): Promise<Product> {
     throw new Error(`${shown}: default export is not an infra config; export default defineInfraConfig({ ... })`);
 
   const dir = join(root, file, "..");
-  const name = relative(root, dir).split(sep).join("/");
+  const name = posixRelative(root, dir);
 
   // The kit learns where it lives, so every command that reads a Worker config finds the product's rate-limit ids.
   if (isCfKit(loaded.default)) loaded.default[PRODUCT_ROOT](dir);

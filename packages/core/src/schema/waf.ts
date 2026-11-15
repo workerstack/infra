@@ -120,7 +120,13 @@ export type WafConfigInput = {
    * - `false` — disabled.
    * - `{ extra: [...] }` — default list + your additional paths.
    */
-  scannerBlock?: boolean | { extra?: string[] | undefined } | undefined;
+  scannerBlock?:
+    | boolean
+    | {
+        /** Paths to block on top of the default list. */
+        extra?: string[] | undefined;
+      }
+    | undefined;
 };
 
 /**
@@ -136,5 +142,10 @@ export type WafConfig = {
    * - `false` — disabled.
    * - `{ extra: [...] }` — default list + your additional paths.
    */
-  scannerBlock: boolean | { extra: string[] };
+  scannerBlock:
+    | boolean
+    | {
+        /** Paths to block on top of the default list. */
+        extra: string[];
+      };
 };

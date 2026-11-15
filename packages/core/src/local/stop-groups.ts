@@ -21,14 +21,15 @@ function groupAlive(pgid: number, rows: readonly ProcessRow[]): boolean {
   }
 }
 
-// SIGTERM, or SIGKILL when `force`; on win32 `taskkill /T`, which needs `/F` for a process with no window to close.
+// SIGTERM, or SIGKILL when `force`. win32 has no signal a windowless process can catch: `taskkill /T` without `/F`
+// only asks a window to close, so every stop there is `/F` at once.
 function signalGroup(pgid: number, { force }: { force: boolean }): void {
   if (process.platform === WIN32) {
     // A live leader's tree is every member; a dead leader's members each are the root of their own.
     const roots = membersOf(readProcessTable(), pgid).filter((row) => row.pid === pgid || row.parent === pgid);
 
     for (const root of roots.length === 0 ? [pgid] : roots.map((row) => row.pid))
-      runTool("taskkill", ["/PID", String(root), "/T", ...(force ? ["/F"] : [])]);
+      runTool("taskkill", ["/PID", String(root), "/T", "/F"]);
 
     return;
   }
@@ -52,7 +53,7 @@ async function waitGone(pgids: readonly number[], deadline: number): Promise<num
   return waitGone(left, deadline);
 }
 
-/** SIGTERM (win32: `taskkill /T`) each group, then SIGKILL (`/F`) whatever is left after the grace period. */
+/** SIGTERM each group, then SIGKILL what is left after the grace period; win32 ends each tree with `taskkill /T /F`. */
 export async function stopGroups(
   children: readonly Pick<Child, "pgid">[],
   graceMs: number = STOP_GRACE_MS,

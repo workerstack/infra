@@ -4,7 +4,16 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { SLEEP, abandoning, alive, groupPids, nodeGroups, parentOf, until } from "./__fixtures__/process-probes.ts";
+import {
+  SLEEP,
+  abandoning,
+  alive,
+  groupPids,
+  nodeGroups,
+  parentOf,
+  scriptPids,
+  until,
+} from "./__fixtures__/process-probes.ts";
 import { clearOrphans } from "./clear-orphans.ts";
 import { writeLock } from "./write-lock.ts";
 
@@ -31,7 +40,8 @@ describe("orphans of a live leader", () => {
     const orphan = await start("orphan", parentOf(parentOf(SLEEP)));
     const stranger = await start("stranger", SLEEP);
 
-    await until(() => groupPids(orphan.pgid).length === 3);
+    await until(() => scriptPids(orphan.pgid).length === 3);
+    expect(scriptPids(orphan.pgid)).toHaveLength(3);
 
     const orphanPids = groupPids(orphan.pgid);
 
@@ -51,7 +61,7 @@ describe("orphans of a gone leader", () => {
 
     await leader.exited;
 
-    const left = groupPids(leader.pgid);
+    const left = scriptPids(leader.pgid);
 
     expect(left).toHaveLength(1);
 

@@ -1,7 +1,8 @@
-import { cpSync, globSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync } from "node:fs";
 import { join } from "node:path";
 
 import { copyProduct, seedRegistry } from "../../cf-config/__fixtures__/copy-product.ts";
+import { absoluteImports } from "../../shared/__fixtures__/absolute-imports.ts";
 
 const SRC = join(import.meta.dirname, "../..");
 
@@ -17,11 +18,7 @@ export function copyRoot(): string {
   seedRegistry(web);
   cpSync(join(import.meta.dirname, "second"), docs, { recursive: true });
 
-  for (const file of globSync("**/*.ts", { cwd: docs })) {
-    const path = join(docs, file);
-
-    writeFileSync(path, readFileSync(path, "utf8").replaceAll('from "../../../', `from "${SRC}/`));
-  }
+  absoluteImports(docs, "../../../", SRC);
 
   return root;
 }

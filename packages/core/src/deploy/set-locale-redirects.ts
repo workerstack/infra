@@ -1,12 +1,11 @@
-import { relative, sep } from "node:path";
-
+import { posixRelative } from "../shared/posix-relative.ts";
 import type { WorkerTarget } from "../workers/worker-target.ts";
 import type { DeployRun } from "./deploy-run.ts";
 
 const PROD = "prod";
 
 function listsLocale({ worker }: WorkerTarget): boolean {
-  const dir = relative(worker.product.root, worker.packageDir).split(sep).join("/");
+  const dir = posixRelative(worker.product.root, worker.packageDir);
 
   return worker.product.config.cloudflare?.zone.redirects.locale.includes(dir) ?? false;
 }

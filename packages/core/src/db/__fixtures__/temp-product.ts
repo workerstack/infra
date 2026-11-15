@@ -1,11 +1,12 @@
-import { cpSync, globSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { Product } from "../../products.ts";
+import { absoluteImports } from "../../shared/__fixtures__/absolute-imports.ts";
 import { FIXTURE_ROOT, fixtureProduct } from "./fixture-product.ts";
 
-const SRC = join(import.meta.dirname, "../../../src/");
+const SRC = join(import.meta.dirname, "../..");
 
 /** A copy of the fixture product in the OS temp dir that holds `schema` as its migrations and a generated config. */
 export type TempProduct = { dir: string; product: Product; remove: () => void };
@@ -19,11 +20,7 @@ export function tempProduct(schema: string): TempProduct {
 
   cpSync(FIXTURE_ROOT, dir, { recursive: true });
 
-  for (const file of globSync("**/*.ts", { cwd: dir })) {
-    const path = join(dir, file);
-
-    writeFileSync(path, readFileSync(path, "utf8").replaceAll('from "../../../src/', `from "${SRC}`));
-  }
+  absoluteImports(dir, "../../../src/", SRC);
 
   writeFileSync(join(dir, "db/migrations/0001_init.sql"), schema);
 

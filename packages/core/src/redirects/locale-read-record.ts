@@ -7,10 +7,10 @@ import { LOCALE_RECORD } from "./locale-record.constants.ts";
 
 type AppRule = Omit<RedirectRule, "enabled">;
 
-/** The rules of the app at `dir` under `productRoot`, as its framework build wrote them. */
+/** The rules of the app at posix `dir` under `productRoot`, as its framework build wrote them. */
 export function localeReadRecord(productRoot: string, dir: string): AppRule[] {
-  const file = path.join(dir, LOCALE_RECORD);
-  const full = path.join(productRoot, file);
+  const file = path.posix.join(dir, LOCALE_RECORD);
+  const full = path.join(productRoot, dir, LOCALE_RECORD);
 
   if (!fs.existsSync(full)) throw new Error(`${file} is missing: build the app and commit it`);
 

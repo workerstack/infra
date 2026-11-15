@@ -10,6 +10,8 @@ export type LocalConfig = {
    * package on Cloudflare's Vite plugin that is not listed is left out of the stack.
    */
   apps?: readonly string[];
+  /** The local host for the zone's apex, one name under `.localhost`. */
   host: string;
+  /** Builds the Worker vars from the origin the stack bound. Omit for no URL vars. */
   vars?: (origin: URL) => Record<string, string>;
 };

@@ -1,10 +1,11 @@
 import { spawnSync } from "node:child_process";
-import { appendFileSync, cpSync, globSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { afterEach, expect, it } from "vitest";
 
 import { env } from "../src/env.ts";
+import { absoluteImports } from "../src/shared/__fixtures__/absolute-imports.ts";
 
 const PACKAGE = join(import.meta.dirname, "..");
 const BIN = join(PACKAGE, "bin", "infra.ts");
@@ -26,11 +27,7 @@ function copyFixture() {
   mkdirSync(join(root, ".git"));
   cpSync(join(import.meta.dirname, "__fixtures__/product"), web, { recursive: true });
 
-  for (const file of globSync("**/*.ts", { cwd: web })) {
-    const path = join(web, file);
-
-    writeFileSync(path, readFileSync(path, "utf8").replaceAll('from "../../../src/', `from "${PACKAGE}/src/`));
-  }
+  absoluteImports(web, "../../../src/", join(PACKAGE, "src"));
 
   return { generated: join(web, "api/.cloudflare"), web: root };
 }

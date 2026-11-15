@@ -1,8 +1,9 @@
 import { writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 
 import type { CfAccountClient } from "../api/account-client.ts";
 import { FAILURE_EXIT } from "../failure-exit.constants.ts";
+import { posixRelative } from "../shared/posix-relative.ts";
 import { runInOrder } from "../shared/run-in-order.ts";
 import { dumpDir } from "../workers/dump-dir.ts";
 import { stamp } from "../workers/stamp.ts";
@@ -46,7 +47,7 @@ async function ask(asker: Asker, run: QueryRun): Promise<void> {
   const lines = summarizeResult(args.view, result);
 
   host.stdout(
-    `## ${scriptName} ${args.view} ${windowLabel(args, now)}: ${lines.length} rows → ${relative(root, file)}`,
+    `## ${scriptName} ${args.view} ${windowLabel(args, now)}: ${lines.length} rows → ${posixRelative(root, file)}`,
   );
 
   const warning = samplingWarning(args.view, result);
