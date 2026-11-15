@@ -140,6 +140,33 @@ subdomainOrigin(new URL(origin), "api"); // http://api.example.localhost
 
 `findLocalStack` returns `undefined` instead of throwing, `localStackPath` names the state file, and `WORKER_HEADER` is the header the edge names a Worker in.
 
+### Google, Apple and Microsoft
+
+`google.searchConsole` submits the product's sitemaps to its Search Console property on `infra set`, and `infra get` lists them with their status. The service account's PEM key is `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` in `global`; add the account as an owner of the property first. `siteUrl` is the property exactly as Search Console names it: `https://example.com/` or `sc-domain:example.com`.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+  google: {
+    searchConsole: {
+      serviceAccountEmail: "infra@example-project.iam.gserviceaccount.com",
+      siteUrl: "sc-domain:example.com",
+      sitemapUrls: ["https://example.com/sitemap.xml"],
+    },
+  },
+});
+```
+
+The three sign-in providers each take `oauth`, one block per scope:
+
+| Provider    | What infra does                                                                                        | Secret                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `google`    | Checks each `clientId`'s format. You create the client in Google Cloud Console.                       | `GOOGLE_CLIENT_SECRET` per scope         |
+| `apple`     | Checks the key and Apple's keys endpoint. You create the Services ID and key in Apple Developer.      | `APPLE_PRIVATE_KEY` per scope            |
+| `microsoft` | Creates the Entra app through Graph when `clientId` is `"STUB"`, writes its id and seals a new secret. | `MICROSOFT_CLIENT_SECRET` per scope      |
+
 ### GitHub sign-in
 
 `github.oauth` declares one GitHub App per scope for signing users in. `infra set` creates each app whose `clientId` is `"STUB"` in the browser and writes its client id back (see the GitHub browser step in commands). Its client secret is `GITHUB_CLIENT_SECRET` in that scope of the env.
