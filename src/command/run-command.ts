@@ -6,6 +6,7 @@ import type { CommandHost } from "./command-host.ts";
 import type { CommandSpec } from "./command-spec.ts";
 import { parseTarget } from "./parse-target.ts";
 import { pickProducts } from "./pick-products.ts";
+import { usageLine } from "./usage-line.ts";
 
 async function runAll(spec: CommandSpec, products: Product[], host: CommandHost): Promise<number> {
   const root = host.root(host.cwd);
@@ -33,7 +34,7 @@ export async function runCommand(spec: CommandSpec, args: readonly string[], hos
   const parsed = parseTarget(args);
 
   if (parsed === undefined) {
-    host.stderr(`usage: infra ${spec.name} [name|--all]${spec.usageFlags === undefined ? "" : ` ${spec.usageFlags}`}`);
+    host.stderr(usageLine(spec.name, spec.usageFlags));
 
     return USAGE_EXIT;
   }

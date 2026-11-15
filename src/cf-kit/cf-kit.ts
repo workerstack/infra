@@ -48,6 +48,8 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
    * portless host with none running.
    */
   localUrlVars(origin?: string): Record<string, string>;
+  /** The migrations a D1 binding owns: its directory, owner Worker and `database` name; none for any other binding. */
+  migrations(binding: string): { database?: string; dir: string; owner: string } | undefined;
   /**
    * The directory of the migrations a D1 binding owns, absolute: answered for the one Worker that owns them (by
    * its deployed name in `env`).

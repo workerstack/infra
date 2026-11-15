@@ -39,6 +39,19 @@ export default defineConfig(({ mode }) => {
 
 `createCfKit` also takes `migrations`, `localRemote` and `defaults`. Binding names type-check against the config's bindings.
 
+## Migrations
+
+`migrations` names, per D1 binding, the directory of its migrations, the Worker that owns them and, optionally, the database its `database.migrate.config.ts` calls it:
+
+```text
+// web.cf-kit.ts, in createCfKit({ ... })
+migrations: { DB: { database: "main", dir: join(import.meta.dirname, "db/migrations"), owner: "web-api" } },
+```
+
+- `dir` and `owner`: `infra gen` writes `migrations_dir` into the owner Worker's config. Nothing else of `migrations` lands in the generated files.
+- `database`: `infra db-migrate` runs `database migrate apply main -e <scope> --yes --json` for the binding, in the nearest directory from `dir` up to the product root that holds `database.migrate.config.ts`. A binding with no `database` is skipped.
+- `infra db-wipe` reads the tables the `.sql` files in `dir` create, so it empties those and drops the rest.
+
 ## The kit file
 
 - A product has exactly one `*.cf-kit.ts` under its root, and it exports the kit (`isCfKit` tells). `infra gen` finds it there.

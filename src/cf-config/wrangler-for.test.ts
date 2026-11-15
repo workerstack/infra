@@ -55,3 +55,21 @@ it("writes main and assets absolute, the bundler keys, and the migrations dir of
     upload_source_maps: false,
   });
 });
+
+it("writes only the migrations dir of a binding whose migrations name a database", () => {
+  const named = createCfKit({
+    config: fixtureConfig(),
+    migrations: { MAIN_DB: { database: "main", dir: "/repo/db/migrations", owner: "api" } },
+    ratelimitIds: "/repo/ids.json",
+  });
+
+  const out = wranglerFor({
+    dir: DIR,
+    kit: named,
+    scope: "prod",
+    settings: {},
+    wrangler: { d1_databases: [{ binding: "MAIN_DB" }], name: "api-prod" },
+  });
+
+  expect(out["d1_databases"]).toStrictEqual([{ binding: "MAIN_DB", migrations_dir: "/repo/db/migrations" }]);
+});

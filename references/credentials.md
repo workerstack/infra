@@ -44,10 +44,10 @@ Write a sealed value with `bun repo env set CLOUDFLARE_API_KEY --scope global`. 
 
 | Key                        | Needed by                 |
 | -------------------------- | ------------------------- |
-| `CLOUDFLARE_ACCOUNT_ID`    | `infra run`, `infra cf`   |
-| `CLOUDFLARE_ACCOUNT_EMAIL` | `infra run`, `infra cf`   |
-| `CLOUDFLARE_API_KEY`       | `infra run`, `infra cf`   |
-| `CLOUDFLARE_API_TOKEN`     | `infra cf`                |
+| `CLOUDFLARE_ACCOUNT_ID`    | `infra run`, `infra cf`, `infra db-migrate`, `infra db-wipe` |
+| `CLOUDFLARE_ACCOUNT_EMAIL` | `infra run`, `infra cf`, `infra db-migrate`, `infra db-wipe` |
+| `CLOUDFLARE_API_KEY`       | `infra run`, `infra cf`, `infra db-migrate`, `infra db-wipe` |
+| `CLOUDFLARE_API_TOKEN`     | `infra cf`, `infra db-migrate`, `infra db-wipe` |
 
 An empty string counts as missing.
 
@@ -59,6 +59,8 @@ An empty string counts as missing.
 
 `cf` is a peer package. Install it with `bun add -d cf`.
 
+`infra db-migrate [name|--all] [--scope dev|prod]` and `infra db-wipe [name|--all] --scope dev|prod` run for each picked product with that product's credentials, read before any program starts. `db-migrate` spawns the `database` binary of the `@workerstack/database` peer (`bun add -d @workerstack/database`); `db-wipe` spawns `wrangler`.
+
 ## Errors
 
 A missing key prints one line:
@@ -69,4 +71,4 @@ infra run: CLOUDFLARE_API_KEY has no global value; run bun repo env set CLOUDFLA
 
 ## Test runners
 
-Both commands refuse to run when `VITEST` is set or `NODE_ENV` is `test`. The guard runs before any value is read, so a test never decrypts a secret. A test uses a fake instead.
+Every command here refuses to run when `VITEST` is set or `NODE_ENV` is `test`. The guard runs before any value is read, so a test never decrypts a secret. A test uses a fake instead.

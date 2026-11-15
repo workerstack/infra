@@ -5,7 +5,7 @@ order: 50
 
 # Commands
 
-Five commands check, change and generate what a product's config describes; five more act on Workers, below. Each takes `[name|--all]`.
+Five commands check, change and generate what a product's config describes, two migrate and wipe its D1 databases, and five more act on Workers, below. Each takes `[name|--all]`.
 
 ```console
 $ infra get              # the product holding the current dir, else the only product
@@ -24,6 +24,8 @@ $ infra gen web --check
 | `infra zone-get`| Reports the zone: rules, drift, declared bindings, R2, AI Search and Turnstile.                                   |
 | `infra zone-set`| Applies the zone settings and the generated zone and locale redirects only.                                      |
 | `infra gen`     | Writes each Worker package's `.cloudflare/wrangler.<scope>.json` and `.dev.vars.<scope>`. `--check` writes nothing and fails on drift. |
+| `infra db-migrate` | Applies each D1 binding's migrations with `database migrate apply`. `--scope dev\|prod`, `prod` by default. |
+| `infra db-wipe` | Empties each D1 binding's tables in a scope. `--scope dev\|prod` is required. |
 
 ## Target
 
@@ -42,6 +44,34 @@ A failing product prints `infra <command>: <product>: <message>`. The rest still
 ```console
 infra zone-get: apps/web: no cloudflare zone in the config
 ```
+
+## Databases
+
+```console
+$ infra db-migrate [name|--all] [--scope dev|prod]
+apps/web
+  BINDING  DATABASE  STATUS   APPLIED  TIME
+  DB       web-prod  applied  2        840ms
+  CACHE    web-cache skipped  0        0ms
+    ↳ no database in the kit's migrations
+$ infra db-wipe [name|--all] --scope dev|prod [--binding NAME...] [--force] [--dry-run]
+$ infra db-wipe web --scope dev --dry-run
+apps/web
+  BINDING  DATABASE  STATUS   DELETED  DROPPED  TIME
+  DB       web-dev   dry-run  3        1        120ms
+```
+
+`db-migrate` runs `database migrate apply <database> -e <scope> --yes --json` for each D1 binding whose kit `migrations` name a `database` (see [cf-kit](cf-kit.md)), in the package that holds its `database.migrate.config.ts`. A binding with no `database` is `skipped`; one with no `database_name` in the scope fails. `--scope local` is a usage error: `usage: infra db-migrate [name|--all] [--scope dev|prod]`, exit 2.
+
+`db-wipe` lists the live tables with `wrangler d1 execute --remote --json` through the generated `.cloudflare/wrangler.<scope>.json` that grants the binding its migrations. Tables the migrations create are emptied, the rest are dropped, and `d1_migrations`, `__drizzle_migrations`, `_cf_*` and SQLite internals keep their rows. The SQL goes through a temp file that is removed after. A rerun after a partial wipe plans only what is left. `--binding NAME` (repeatable) limits it; `--dry-run` only plans.
+
+A prod wipe needs `--force`, and without it stops before any credential is read:
+
+```console
+infra db-wipe: apps/web: Refusing to wipe prod. Pass --force if you meant it.
+```
+
+Both read the product's credentials first, and need `@workerstack/database` and `wrangler` as peers. A failed binding prints its note under its row, then `infra <command>: <product>: N of M databases failed`, and the exit code is 1.
 
 ## Secret flow
 

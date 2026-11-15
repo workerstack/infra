@@ -57,6 +57,22 @@ describe("migrationsDir", () => {
     expect(owner.migrationsDir("prod", "acme-cron-prod", "MAIN_DB")).toBeUndefined();
     expect(kit.migrationsDir("prod", "acme-api-prod", "MAIN_DB")).toBeUndefined();
   });
+
+  it("names a binding's migrations with its database, and none for another binding", () => {
+    const owner = createCfKit({
+      config: fixtureConfig(),
+      migrations: { MAIN_DB: { database: "main", dir: "/repo/db/migrations", owner: "acme-api" } },
+      ratelimitIds: "r.json",
+    });
+
+    expect(owner.migrations("MAIN_DB")).toStrictEqual({
+      database: "main",
+      dir: "/repo/db/migrations",
+      owner: "acme-api",
+    });
+    expect(owner.migrations("toString")).toBeUndefined();
+    expect(kit.migrations("MAIN_DB")).toBeUndefined();
+  });
 });
 
 describe("zone and local facts", () => {

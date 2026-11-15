@@ -23,8 +23,8 @@ type KitInput<I extends InfraConfig, D extends Partial<WorkerConfig>> = {
   defaults?: D;
   /** The kinds whose bindings read their remote resource in local. */
   localRemote?: readonly LocalRemoteKind[];
-  /** The D1 migrations each binding owns. */
-  migrations?: { readonly [B in KeysOf<I>["d1"]]?: { dir: string; owner: string } };
+  /** The D1 migrations each binding owns, and the database name `infra db-migrate` applies them as. */
+  migrations?: { readonly [B in KeysOf<I>["d1"]]?: { database?: string; dir: string; owner: string } };
   /** The registry file the limiters' namespace ids live in. */
   ratelimitIds: string;
 };

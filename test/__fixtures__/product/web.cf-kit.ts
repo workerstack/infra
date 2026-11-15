@@ -5,6 +5,6 @@ import config from "./infra.config.ts";
 
 export const kit = createCfKit({
   config,
-  migrations: { DB: { dir: join(import.meta.dirname, "db/migrations"), owner: "web-api" } },
+  migrations: { DB: { database: "main", dir: join(import.meta.dirname, "db/migrations"), owner: "web-api" } },
   ratelimitIds: join(import.meta.dirname, "ratelimit-ids.json"),
 });

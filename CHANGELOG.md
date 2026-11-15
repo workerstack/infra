@@ -15,3 +15,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - infra get set zone-get and zone-set with new secrets written through bun repo env set
 - cf-kit, infra gen and generated zone and locale redirects
 - infra deploy logs-tail logs-query observability-sync and probe
+- infra db-migrate and db-wipe on the kit's migrations
