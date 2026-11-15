@@ -1,4 +1,4 @@
-import { appendFileSync, copyFileSync, rmSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { afterEach, expect, it } from "vitest";
@@ -12,49 +12,42 @@ const LOAD_TIMEOUT = 30_000;
 afterEach(cleanCopies);
 
 it(
-  "imports the kit the product's one *.cf-kit.ts exports",
+  "takes the kit infra.config.ts default-exports, its registry at the product root",
   async () => {
     const { product } = copyProduct();
     const kit = await loadProductKit(product.root);
 
     expect(isCfKit(kit)).toBe(true);
     expect(kit.envs).toStrictEqual(["local", "dev", "prod"]);
+    expect(kit.ratelimitFile()).toBe(join(product.root, "ratelimit-ids.json"));
   },
   LOAD_TIMEOUT,
 );
 
 it(
-  "fails a product with no kit file, and one with two, naming both",
+  "fails a leftover kit file, naming the move",
   async () => {
     const { product } = copyProduct();
 
-    copyFileSync(join(product.root, "web.cf-kit.ts"), join(product.root, "api/a.cf-kit.ts"));
+    writeFileSync(join(product.root, "web.cf-kit.ts"), "export const kit = {};\n");
     await expect(loadProductKit(product.root)).rejects.toThrow(
-      "2 kits (api/a.cf-kit.ts, web.cf-kit.ts); a product has one",
+      "web.cf-kit.ts: the kit is built by defineInfraConfig now; " +
+        "move its options to cloudflare.workers in infra.config.ts and delete the file",
     );
-
-    rmSync(join(product.root, "api/a.cf-kit.ts"));
-    rmSync(join(product.root, "web.cf-kit.ts"));
-    await expect(loadProductKit(product.root)).rejects.toThrow("no *.cf-kit.ts; a product with Workers has one");
   },
   LOAD_TIMEOUT,
 );
 
 it(
-  "fails a kit file that exports no kit, and one that exports two",
+  "fails an infra.config.ts whose default export is no kit",
   async () => {
     const { product } = copyProduct();
-    const file = join(product.root, "web.cf-kit.ts");
 
-    writeFileSync(join(product.root, "empty.cf-kit.ts"), "export const nothing = 1;\n");
-    rmSync(file);
-    await expect(loadProductKit(product.root)).rejects.toThrow("empty.cf-kit.ts exports no kit");
-
-    const { product: other } = copyProduct();
-    const twin = 'export const twin = createCfKit({ config, ratelimitIds: "ids.json" });\n';
-
-    appendFileSync(join(other.root, "web.cf-kit.ts"), twin);
-    await expect(loadProductKit(other.root)).rejects.toThrow("web.cf-kit.ts exports 2 kits; a kit file exports one");
+    writeFileSync(join(product.root, "infra.config.ts"), "export default { env: {} };\n");
+    await expect(loadProductKit(product.root)).rejects.toThrow(
+      "infra.config.ts: default export is not what defineInfraConfig returns; " +
+        "export default defineInfraConfig({ ... })",
+    );
   },
   LOAD_TIMEOUT,
 );

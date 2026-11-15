@@ -1,18 +1,18 @@
 import { defineConfig } from "cf/config";
 
-import { kit } from "../kit.cf-kit.ts";
+import infra from "../infra.config.ts";
 
 export default defineConfig(({ mode }) => {
-  const env = kit.env(mode);
+  const scope = infra.scope(mode);
 
   return {
     worker: {
-      ...kit.defaults,
+      ...infra.defaults,
       compatibilityDate: "2026-01-20",
       entrypoint: "./src/worker.ts",
-      env: { ...kit.vars(env, "GREETING") },
-      name: kit.name("playground-api", env),
-      triggers: kit.routes(["example.com/api/*"], "example.com"),
+      env: { ...infra.vars(scope, "GREETING") },
+      name: infra.name("playground-api", scope),
+      triggers: infra.routes(["example.com/api/*"], "example.com"),
     },
   };
 });

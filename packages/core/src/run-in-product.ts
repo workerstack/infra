@@ -9,7 +9,7 @@ import { discoverProducts, productAt } from "./products.ts";
 import { repoRoot } from "./repo-root.ts";
 import type { InfraEnv } from "./schema/infra.ts";
 
-const NO_ENV: InfraEnv = { dev: {}, global: {}, local: {}, prod: {}, sealedKeys: () => new Set() };
+const NO_ENV: InfraEnv = { dev: {}, global: {}, local: {}, prod: {} };
 
 export type ProductRun = {
   /** The command's name, shown in front of an error. */

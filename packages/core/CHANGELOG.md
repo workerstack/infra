@@ -17,3 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `infra deploy`, `logs-tail`, `logs-query`, `observability-sync` and `probe`
 - `infra db-migrate` and `db-wipe` on the kit's migrations
 - `infra loc` runs a product's Workers and apps behind one local edge
+
+### Changed
+
+- BREAKING: infra.config.ts is the product's one file: defineInfraConfig returns the config and the kit, createCfKit and *.cf-kit.ts are gone (a leftover kit file fails infra gen), the kit's options move to cloudflare.workers, and env.sealedKeys, local.vars and cloudflare.workers.ratelimitIds are optional (ratelimit-ids.json at the product root)

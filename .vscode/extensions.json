@@ -2,6 +2,7 @@
   "recommendations": [
     "oxc.oxc-vscode",
     "wdomitrz.simple-lsp-client",
-    "vitest.explorer"
+    "vitest.explorer",
+    "TypeScriptTeam.native-preview"
   ]
 }

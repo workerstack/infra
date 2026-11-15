@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { fixtureConfig } from "./__fixtures__/kit-fixtures.ts";
-import { createCfKit } from "./create-cf-kit.ts";
 
-const kit = createCfKit({ config: fixtureConfig(), ratelimitIds: "r.json" });
+const kit = fixtureConfig();
 
 describe("services and routes", () => {
   it("suffix each service target with the scope", () => {

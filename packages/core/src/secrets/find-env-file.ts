@@ -21,5 +21,5 @@ export async function findEnvFile(product: Product): Promise<string | undefined>
 async function exportsEnv(file: string, product: Product): Promise<boolean> {
   const loaded = await (import(pathToFileURL(file).href) /* an env file module */ as Promise<Record<string, InfraEnv>>);
 
-  return Object.values(loaded).includes(product.config.env);
+  return Object.values(loaded).some((value) => value === product.config.env);
 }

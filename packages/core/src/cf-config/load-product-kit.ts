@@ -1,41 +1,40 @@
-import { relative } from "node:path";
+import { join, relative, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { PRODUCT_ROOT } from "../cf-kit/cf-kit.constants.ts";
 import type { CfKit } from "../cf-kit/cf-kit.ts";
 import { isCfKit } from "../cf-kit/is-cf-kit.ts";
-import { CF_KIT_SUFFIX } from "./cf-config.constants.ts";
+import { INFRA_CONFIG_FILE } from "../products.ts";
+import { KIT_MOVED_MESSAGE } from "./cf-config.constants.ts";
 import { findInProduct } from "./find-in-product.ts";
 
-function kitFileOf(productRoot: string): string {
-  const files = findInProduct(productRoot, `**/*${CF_KIT_SUFFIX}`);
-  const [file, extra] = files;
+// A kit file from before `defineInfraConfig` built the kit: its options belong in `cloudflare.workers` now.
+function refuseKitFiles(productRoot: string): void {
+  const moves = findInProduct(productRoot, "**/*.cf-kit.ts").map(
+    (file) => `${relative(productRoot, file).split(sep).join("/")}: ${KIT_MOVED_MESSAGE}`,
+  );
 
-  if (file === undefined) throw new Error(`no *${CF_KIT_SUFFIX}; a product with Workers has one`);
-
-  if (extra !== undefined) {
-    const names = files.map((found) => relative(productRoot, found)).join(", ");
-
-    throw new Error(`${files.length} kits (${names}); a product has one`);
-  }
-
-  return file;
+  if (moves.length > 0) throw new Error(moves.join("\n"));
 }
 
 /**
- * The kit the product's one `*.cf-kit.ts` exports. No kit file, two of them, or a file that exports no kit or
- * two fails naming the file.
+ * The kit the product's `infra.config.ts` default-exports, handed the product root, where its unset rate-limit
+ * registry lives. A leftover kit file, or a default export that is not `defineInfraConfig`'s value, fails naming
+ * the file.
  */
 export async function loadProductKit(productRoot: string): Promise<CfKit> {
-  const file = kitFileOf(productRoot);
-  const shown = relative(productRoot, file);
-  const loaded = await (import(pathToFileURL(file).href) /* a module namespace is an object */ as Promise<object>);
-  const kits = [...new Set(Object.values(loaded).filter(isCfKit))];
+  refuseKitFiles(productRoot);
 
-  const [kit, other] = kits;
+  const href = pathToFileURL(join(productRoot, INFRA_CONFIG_FILE)).href;
+  const loaded = await (import(href) /* an infra.config.ts module */ as Promise<{ default?: unknown }>);
 
-  if (kit === undefined) throw new Error(`${shown} exports no kit; export createCfKit({ ... })`);
+  if (!isCfKit(loaded.default)) {
+    const fix = "export default defineInfraConfig({ ... })";
 
-  if (other !== undefined) throw new Error(`${shown} exports ${kits.length} kits; a kit file exports one`);
+    throw new Error(`${INFRA_CONFIG_FILE}: default export is not what defineInfraConfig returns; ${fix}`);
+  }
 
-  return kit;
+  loaded.default[PRODUCT_ROOT](productRoot);
+
+  return loaded.default;
 }

@@ -1,6 +1,9 @@
+import type { WorkerConfig } from "@cloudflare/config";
+
 import type { EnvBindings } from "./bindings.ts";
 import type { CloudflareAccessEnv, CloudflareR2Credentials, CloudflareTurnstileEnv } from "./cloudflare-env.ts";
 import type { InfraScope } from "./infra.ts";
+import type { CloudflareWorkers, CloudflareWorkersInput } from "./workers.ts";
 import type { ZoneConfig, ZoneConfigInput } from "./zone.ts";
 
 /**
@@ -8,7 +11,10 @@ import type { ZoneConfig, ZoneConfigInput } from "./zone.ts";
  * Account credentials are not config: they come from `env.global` (`CLOUDFLARE_ACCOUNT_ID`,
  * `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`).
  */
-export type CloudflareConfigInput<B extends Record<string, EnvBindings> = Record<string, EnvBindings>> = {
+export type CloudflareConfigInput<
+  B extends Record<string, EnvBindings> = Record<string, EnvBindings>,
+  D extends Partial<WorkerConfig> = Partial<WorkerConfig>,
+> = {
   /** Per-env CF Access config, keyed by scope (`local` / `dev` / `prod`). */
   access?: Partial<Record<InfraScope, CloudflareAccessEnv>>;
   /** Per-env worker binding set. */
@@ -17,6 +23,8 @@ export type CloudflareConfigInput<B extends Record<string, EnvBindings> = Record
   r2?: CloudflareR2Credentials;
   /** Per-env Turnstile widget config. */
   turnstile?: Partial<Record<InfraScope, CloudflareTurnstileEnv>>;
+  /** What the product's Workers share: defaults, migrations, remote kinds in local and the rate-limit registry. */
+  workers?: CloudflareWorkersInput<B, D>;
   /** Zone-level config (DNS, WAF, SSL, cache …). */
   zone: ZoneConfigInput;
 };
@@ -30,5 +38,6 @@ export type CloudflareConfig = {
   bindings: Record<string, EnvBindings>;
   r2?: CloudflareR2Credentials | undefined;
   turnstile?: Partial<Record<InfraScope, CloudflareTurnstileEnv>> | undefined;
+  workers?: CloudflareWorkers | undefined;
   zone: ZoneConfig;
 };

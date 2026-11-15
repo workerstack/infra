@@ -13,7 +13,7 @@ export function secretBindings({ config }: KitContext): Pick<CfKit, "secrets"> {
   return {
     secrets: (...keys) => {
       for (const scope of INFRA_SCOPES) {
-        const sealed = config.env.sealedKeys(scope);
+        const sealed = config.env.sealedKeys?.(scope) ?? new Set<string>();
         const plain = keys.find((key) => !sealed.has(key));
 
         if (plain !== undefined) {

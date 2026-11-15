@@ -37,10 +37,11 @@ function readRegistry(file: string): string {
 
 // Generates one package, allocating rate-limit ids, and types it; prints each file it changed.
 async function generate(run: ProductRun, input: PackageInput): Promise<void> {
-  const before = readRegistry(run.kit.ratelimitIds);
+  const registry = run.kit.ratelimitFile();
+  const before = readRegistry(registry);
   const written = writePlanned(await run.kit[ALLOCATE_RATELIMITS](() => planCfPackage(input)));
 
-  if (readRegistry(run.kit.ratelimitIds) !== before) written.push(run.kit.ratelimitIds);
+  if (readRegistry(registry) !== before) written.push(registry);
 
   for (const file of written) run.log(`wrote ${shownPath(run.product, file)}`);
 

@@ -3,16 +3,19 @@ import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
 
 import { cleanCopies, copyProduct, seedRegistry } from "./__fixtures__/copy-product.ts";
+import { loadProductKit } from "./load-product-kit.ts";
 import { readCfConfig } from "./read-cf-config.ts";
 
 const LOAD_TIMEOUT = 30_000;
 
 afterEach(cleanCopies);
 
-function apiConfig(): string {
+// The product's kit is loaded first, as every command does, so it knows the root its rate-limit ids live at.
+async function apiConfig(): Promise<string> {
   const { product } = copyProduct();
 
   seedRegistry(product.root);
+  await loadProductKit(product.root);
 
   return join(product.root, "api/cloudflare.config.ts");
 }
@@ -20,7 +23,7 @@ function apiConfig(): string {
 it(
   "answers the parsed Worker and its Wrangler config for the scope, under Bun",
   async () => {
-    const prod = await readCfConfig(apiConfig(), "prod");
+    const prod = await readCfConfig(await apiConfig(), "prod");
 
     expect(prod.worker.name).toBe("web-api-prod");
     expect(prod.wrangler).toMatchObject({
@@ -37,7 +40,7 @@ it(
 it(
   "evaluates the config once per scope",
   async () => {
-    const file = apiConfig();
+    const file = await apiConfig();
     const dev = await readCfConfig(file, "dev");
     const local = await readCfConfig(file, "local");
 
@@ -53,6 +56,8 @@ it(
     const noDefault = join(import.meta.dirname, "__fixtures__/no-default.fixture.ts");
     const { product } = copyProduct();
     const unseeded = join(product.root, "api/cloudflare.config.ts");
+
+    await loadProductKit(product.root);
 
     await expect(readCfConfig(noDefault, "prod")).rejects.toThrow(`${noDefault}: does not have a default export`);
     await expect(readCfConfig(unseeded, "prod")).rejects.toThrow(

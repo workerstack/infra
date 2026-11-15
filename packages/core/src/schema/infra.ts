@@ -1,3 +1,5 @@
+import type { WorkerConfig } from "@cloudflare/config";
+
 import type { AppleConfig } from "./apple.ts";
 import type { EnvBindings } from "./bindings.ts";
 import type { CloudflareConfig, CloudflareConfigInput } from "./cloudflare.ts";
@@ -14,7 +16,7 @@ type EnvView = Readonly<Record<string, string | undefined>>;
 /**
  * The product's env: any object with `global`, `local`, `dev` and `prod` views of string values,
  * such as a `defineEnv` instance. Credentials are read from a view when a command runs, never at
- * config load.
+ * config load. With no `sealedKeys`, no key is sealed.
  */
 export type InfraEnv = {
   readonly dev: EnvView;
@@ -22,21 +24,22 @@ export type InfraEnv = {
   readonly local: EnvView;
   readonly prod: EnvView;
   /** The keys sealed in a scope: secret values that never go into a plain var. */
-  sealedKeys(scope: InfraScope): ReadonlySet<string>;
+  sealedKeys?(scope: InfraScope): ReadonlySet<string>;
 };
 
 /**
  * Top-level multi-provider infrastructure config — pre-parse shape. Pass to `defineInfraConfig`.
- * Generic in the binding sets only, so `cloudflare.bindings` keeps its names.
+ * Generic in the binding sets, the env and the Workers' defaults, so the kit it returns keeps their names.
  */
 export type InfraConfigInput<
   B extends Record<string, EnvBindings> = Record<string, EnvBindings>,
   V extends InfraEnv = InfraEnv,
+  D extends Partial<WorkerConfig> = Partial<WorkerConfig>,
 > = {
   /** Apple provider (Sign in with Apple). */
   apple?: AppleConfig;
   /** Cloudflare provider (zone, bindings, Access, Turnstile, R2). */
-  cloudflare?: CloudflareConfigInput<B>;
+  cloudflare?: CloudflareConfigInput<B, D>;
   /** The product env holding the account credentials. */
   env: V;
   /** Google provider (OAuth, Search Console). */

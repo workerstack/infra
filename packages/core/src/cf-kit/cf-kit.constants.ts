@@ -1,7 +1,7 @@
 /**
  * The kit's switch `infra gen` alone turns: while it runs, a limiter with no id gets the next one and the registry
  * is written, where anywhere else the missing id fails the config. A registered symbol, since the generator and the
- * kit file may each load their own copy of this module.
+ * product's `infra.config.ts` may each load their own copy of this module.
  */
 export const ALLOCATE_RATELIMITS: unique symbol = /* @__PURE__ */ Symbol.for("@workerstack/infra/allocate-ratelimits");
 
@@ -21,7 +21,20 @@ export const ENVIRONMENT_VAR = "ENVIRONMENT";
 export const ACCOUNT_ID_GLOBAL_KEY = "CLOUDFLARE_ACCOUNT_ID";
 
 /**
- * Marks a kit, so a generator finds it among a module's exports. A registered symbol: the kit file and the generator
- * may each load their own copy of this module.
+ * Marks a kit, so a loader tells `defineInfraConfig`'s value from any other export. A registered symbol: the
+ * product's `infra.config.ts` and the generator may each load their own copy of this module.
  */
 export const CF_KIT: unique symbol = /* @__PURE__ */ Symbol.for("@workerstack/infra/cf-kit");
+
+/**
+ * The kit's hand-off of its product root, which the loader of `infra.config.ts` gives it: the unset rate-limit
+ * registry lives there. A registered symbol, like `CF_KIT`.
+ */
+export const PRODUCT_ROOT: unique symbol = /* @__PURE__ */ Symbol.for("@workerstack/infra/product-root");
+
+/** The registry file at the product root when `cloudflare.workers.ratelimitIds` is unset. */
+export const RATELIMIT_IDS_FILE = "ratelimit-ids.json";
+
+/** The failure for a limiter whose kit has no registry: none set, no root handed to it, none above the cwd. */
+export const NO_REGISTRY_MESSAGE =
+  "no rate-limit registry: set cloudflare.workers.ratelimitIds in infra.config.ts, or run inside the product";

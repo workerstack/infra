@@ -1,15 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { defineInfraConfig } from "../define-infra-config.ts";
 import { fakeInfraEnv } from "../shared/__fixtures__/fake-infra-env.ts";
-import { fixtureConfig } from "./__fixtures__/kit-fixtures.ts";
+import { fixtureConfig, fixtureEnv } from "./__fixtures__/kit-fixtures.ts";
 import type { CfKit } from "./cf-kit.ts";
-import { createCfKit } from "./create-cf-kit.ts";
 
-const kit = createCfKit({
-  config: fixtureConfig(),
-  localRemote: ["d1_databases", "r2_buckets"],
-  ratelimitIds: "ratelimit-ids.json",
-});
+const kit = fixtureConfig(fixtureEnv(), { localRemote: ["d1_databases", "r2_buckets"] });
 
 describe("storage bindings", () => {
   it("resolve each name against the scope's infra bindings", () => {
@@ -35,7 +31,7 @@ describe("remote storage", () => {
   });
 
   it("is left alone when the kit owns no kind", () => {
-    const free = createCfKit({ config: fixtureConfig(), ratelimitIds: "r.json" });
+    const free = fixtureConfig();
 
     expect(free.d1("local", "MAIN_DB").MAIN_DB).not.toHaveProperty("dev");
   });
@@ -47,7 +43,7 @@ describe("missing bindings", () => {
   });
 
   it("name the lack of a cloudflare block", () => {
-    const bare: CfKit = createCfKit({ config: { env: fakeInfraEnv() }, ratelimitIds: "r.json" });
+    const bare: CfKit = defineInfraConfig({ env: fakeInfraEnv() });
 
     expect(() => bare.kv("local", "CACHE_KV")).toThrow("infra has no local kv_namespaces binding");
   });

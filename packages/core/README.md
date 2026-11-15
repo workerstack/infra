@@ -42,7 +42,7 @@ Commands, run as `infra <command>`:
 
 ## Config
 
-An `infra.config.ts` describes one product's infrastructure. It default-exports the result of `defineInfraConfig`, which checks the input and fills in defaults.
+An `infra.config.ts` describes one product's infrastructure, and it is the product's one file for it. It default-exports the result of `defineInfraConfig`, which checks the input, fills in defaults and builds the kit each Worker's `cloudflare.config.ts` imports (see Worker configs from one env).
 
 ```ts
 import { defineInfraConfig } from "@workerstack/infra";
@@ -68,11 +68,51 @@ export default defineInfraConfig({
 });
 ```
 
-`env` is any object with `global`, `local`, `dev` and `prod` views of string values, such as a `defineEnv` instance. `defineInfraConfig` keeps it as given and never reads a value; a command reads the credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`) when it runs. A secret field in the config is a type error.
+`env` is any object with `global`, `local`, `dev` and `prod` views of string values, such as a `defineEnv` instance. `sealedKeys(scope)` names the keys sealed in a scope; a `defineEnv` instance has it, and a plain object can leave it out, so no key is sealed. `defineInfraConfig` never reads a value: the `env` it returns reads the given env key by key, and a command reads the credentials (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ACCOUNT_EMAIL`, `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`) when it runs. A secret field in the config is a type error.
+
+The smallest product names a zone and an env with plain values:
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  cloudflare: { zone: { domain: "example.com", zoneId: "0123456789abcdef0123456789abcdef" } },
+  env: { dev: { GREETING: "hi dev" }, global: {}, local: { GREETING: "hi local" }, prod: { GREETING: "hi prod" } },
+  local: { host: "example.localhost" },
+});
+```
+
+### Workers
+
+`cloudflare.workers` holds what the product's Workers share. Each field is optional:
+
+- `defaults`: what every Worker's config spreads first (`...infra.defaults`).
+- `migrations`: per D1 binding, its migrations (see Worker configs from one env).
+- `localRemote`: the kinds (`d1_databases`, `r2_buckets`) whose bindings read their remote resource in `local`.
+- `ratelimitIds`: the registry file of the limiters' namespace ids, used as given. Unset, it is `ratelimit-ids.json` at the product root.
+
+```ts
+import { defineInfraConfig } from "@workerstack/infra";
+
+export default defineInfraConfig({
+  cloudflare: {
+    bindings: { local: { d1_databases: { DB: { database_id: "db-local-id", database_name: "db-local" } } } },
+    workers: {
+      defaults: { compatibilityDate: "2026-01-20" },
+      localRemote: ["d1_databases"],
+      migrations: { DB: { dir: "/repo/apps/web/db/migrations", owner: "web-api" } },
+    },
+    zone: { domain: "example.com", zoneId: "0123456789abcdef0123456789abcdef" },
+  },
+  env: { dev: {}, global: {}, local: {}, prod: {} },
+});
+```
+
+A migration for a binding the config does not declare is a type error.
 
 ### Local stack
 
-`local` gives the product a local stack for `infra loc`: `host` is its local host, and `vars` maps the stack's origin to the URL vars each Worker's `.dev.vars.local` gets.
+`local` gives the product a local stack for `infra loc`: `host` is its local host, and `vars`, when given, maps the stack's origin to the URL vars each Worker's `.dev.vars.local` gets. With no `vars` the stack sets none.
 
 `apps` lists the packages that run in their own `vite dev`, by dir relative to the product root:
 
@@ -439,46 +479,49 @@ The commands refuse to run under `VITEST` or `NODE_ENV=test`, before any value i
 
 ## Worker configs from one env
 
-A product writes one `*.cf-kit.ts` that builds a kit from its infra config. Each Worker's `cloudflare.config.ts` asks the kit for bindings, vars and secrets per scope (`local`, `dev` and `prod`), so every Worker reads the same env.
+A product writes one `infra.config.ts`. The value `defineInfraConfig` returns is the config and the kit at once. Each Worker's `cloudflare.config.ts` imports it and asks it for bindings, vars and secrets per scope (`local`, `dev` and `prod`), so every Worker reads the same env.
 
 ```ts
-// apps/web/web.cf-kit.ts
-import { join } from "node:path";
+// apps/web/infra.config.ts
+import { defineInfraConfig } from "@workerstack/infra";
 
-import { createCfKit, defineInfraConfig } from "@workerstack/infra";
-
-const config = defineInfraConfig({
-  env: { dev: {}, global: {}, local: {}, prod: {}, sealedKeys: () => new Set(["API_KEY"]) },
+export default defineInfraConfig({
+  cloudflare: {
+    bindings: { local: { d1_databases: { DB: { database_id: "db-local-id", database_name: "db-local" } } } },
+    zone: { domain: "example.com", zoneId: "0123456789abcdef0123456789abcdef" },
+  },
+  env: { dev: {}, global: {}, local: { GREETING: "hi" }, prod: {}, sealedKeys: () => new Set(["API_KEY"]) },
 });
-
-export const kit = createCfKit({ config, ratelimitIds: join(import.meta.dirname, "ratelimit-ids.json") });
 ```
 
-In a product the config is `infra.config.ts`'s default export, imported by the kit file. A Worker's `cloudflare.config.ts` then asks the kit:
+A Worker's `cloudflare.config.ts` then asks it:
 
 ```text
 // apps/web/api/cloudflare.config.ts
+import infra from "../infra.config.ts";
+
 export default defineConfig(({ mode }) => {
-  const env = kit.env(mode);
+  const scope = infra.scope(mode);
 
   return {
     worker: {
-      env: { ...kit.d1(env, "DB"), ...kit.secrets("API_KEY"), ...kit.vars(env, "GREETING") },
+      ...infra.defaults,
+      env: { ...infra.d1(scope, "DB"), ...infra.secrets("API_KEY"), ...infra.vars(scope, "GREETING") },
       entrypoint: "./src/index.ts",
-      name: kit.name("api", env),
+      name: infra.name("api", scope),
     },
   };
 });
 ```
 
-`createCfKit` also takes `migrations`, `localRemote` and `defaults`. Binding names type-check against the config's bindings.
+`infra.scope(mode)` is the scope of a `--mode` (Vite's `development` is `local`); `infra.env.local` and the other views still read the env. Binding names type-check against the config's bindings, and var and secret names against the env's keys: `infra.d1(scope, "NOPE")` is a type error. The kit's options live in `cloudflare.workers` (see Config): `defaults`, `migrations`, `localRemote` and `ratelimitIds`.
 
 ### Migrations
 
 `migrations` names, per D1 binding, the directory of its migrations, the Worker that owns them and, optionally, the database its `database.migrate.config.ts` calls it:
 
 ```text
-// web.cf-kit.ts, in createCfKit({ ... })
+// infra.config.ts, in cloudflare.workers
 migrations: { DB: { database: "main", dir: join(import.meta.dirname, "db/migrations"), owner: "web-api" } },
 ```
 
@@ -486,15 +529,24 @@ migrations: { DB: { database: "main", dir: join(import.meta.dirname, "db/migrati
 - `database`: `infra db-migrate` runs `database migrate apply main -e <scope> --yes --json` for the binding, in the nearest directory from `dir` up to the product root that holds `database.migrate.config.ts`. A binding with no `database` is skipped.
 - `infra db-wipe` reads the tables the `.sql` files in `dir` create, so it empties those and drops the rest.
 
-### The kit file
+### Rate limits
 
-- A product has exactly one `*.cf-kit.ts` under its root, and it exports the kit (`isCfKit` tells). `infra gen` finds it there.
+`infra.ratelimits(worker, scope, ...limits)` gives each limiter its namespace id from the registry. `infra gen` gives a new limiter the next free id and writes it there. The registry is `cloudflare.workers.ratelimitIds` when set, else `ratelimit-ids.json` at the product root: the root `infra` loaded the config from, or, in a process `infra` did not start (`cf workers types`, `vite dev`), the nearest directory above the working directory that holds an `infra.config.ts`. Commit the file, so an id never changes.
+
+### The product
+
+- The kit is `infra.config.ts`'s default export (`isCfKit` tells). A default export that is not `defineInfraConfig`'s value fails the command.
 - A Worker package is a directory with a `cloudflare.config.ts`. node_modules, .git and .worktrees are skipped.
+- A kit file left from before fails `infra gen`, naming its move:
+
+```console
+infra gen: apps/web: web.cf-kit.ts: the kit is built by defineInfraConfig now; move its options to cloudflare.workers in infra.config.ts and delete the file
+```
 
 ### Sealed and plain
 
-- `kit.vars(env, ...keys)` takes plain values. A sealed key never lands in a var.
-- `kit.secrets(...keys)` takes sealed values. A key must be sealed in `local`, `dev` and `prod`, because a secret goes up with a deploy and runs locally from `.dev.vars.local`.
+- `infra.vars(scope, ...keys)` takes plain values. A sealed key never lands in a var.
+- `infra.secrets(...keys)` takes sealed values. A key must be sealed in `local`, `dev` and `prod`, because a secret goes up with a deploy and runs locally from `.dev.vars.local`. With no `sealedKeys` on the env, nothing is sealed, so a product with secrets gives it.
 - A secret with no value in a scope fails naming the key and scope.
 
 The two errors, each printed as `infra gen: <product>: <message>`:
@@ -502,12 +554,6 @@ The two errors, each printed as `infra gen: <product>: <message>`:
 ```console
 infra gen: apps/web: API_KEY is sealed in local; ask kit.secrets for it, not kit.vars
 infra gen: apps/web: GREETING is not sealed in prod; a secret must be sealed: bun repo env set GREETING --scope prod
-```
-
-A product with two kit files stops too:
-
-```console
-infra gen: apps/web: 2 kits (a.cf-kit.ts, b.cf-kit.ts); a product has one
 ```
 
 ### Generating

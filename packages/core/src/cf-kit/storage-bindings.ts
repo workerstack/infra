@@ -7,7 +7,7 @@ import {
 } from "@cloudflare/config";
 
 import type { InfraScope } from "../schema/infra.ts";
-import type { LocalRemoteKind } from "./cf-kit-types.ts";
+import type { LocalRemoteKind } from "../schema/workers.ts";
 import type { CfKit } from "./cf-kit.ts";
 import { each } from "./each.ts";
 import type { KitContext } from "./kit-context.ts";

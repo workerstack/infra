@@ -2,6 +2,8 @@ import { globSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { PRODUCT_ROOT } from "./cf-kit/cf-kit.constants.ts";
+import { isCfKit } from "./cf-kit/is-cf-kit.ts";
 import type { InfraConfig } from "./schema/infra.ts";
 
 export const INFRA_CONFIG_FILE = "infra.config.ts";
@@ -46,6 +48,9 @@ async function loadProduct(root: string, file: string): Promise<Product> {
 
   const dir = join(root, file, "..");
   const name = relative(root, dir).split(sep).join("/");
+
+  // The kit learns where it lives, so every command that reads a Worker config finds the product's rate-limit ids.
+  if (isCfKit(loaded.default)) loaded.default[PRODUCT_ROOT](dir);
 
   return { config: loaded.default, configFile, name: name === "" ? "." : name, root: dir };
 }

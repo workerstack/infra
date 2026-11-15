@@ -5,13 +5,6 @@ import { copyProduct, seedRegistry } from "../../cf-config/__fixtures__/copy-pro
 
 const SRC = join(import.meta.dirname, "../..");
 
-// What the cf-config fixture lacks: an infra.config.ts, so discovery finds it as a product.
-const WEB_CONFIG = `import { defineInfraConfig } from "${SRC}/define-infra-config.ts";
-import { fakeInfraEnv } from "${SRC}/shared/__fixtures__/fake-infra-env.ts";
-
-export default defineInfraConfig({ env: fakeInfraEnv() });
-`;
-
 /**
  * A root of two products: the cf-config fixture as `apps/web` (Worker `web-api` in `api/`) and the `second`
  * fixture as `apps/docs` (Worker `docs-site` in `worker/`). `cleanCopies` removes it.
@@ -21,7 +14,6 @@ export function copyRoot(): string {
   const web = join(root, "apps/web");
   const docs = join(root, "apps/docs");
 
-  writeFileSync(join(web, "infra.config.ts"), WEB_CONFIG);
   seedRegistry(web);
   cpSync(join(import.meta.dirname, "second"), docs, { recursive: true });
 

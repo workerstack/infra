@@ -10,7 +10,7 @@ export function configFacts(context: KitContext): Facts {
   return {
     localApps: local?.apps ?? [],
     localHost: local?.host,
-    localUrlVars: (origin) => (local === undefined ? {} : local.vars(new URL(origin ?? `http://${local.host}`))),
+    localUrlVars: (origin) => local?.vars?.(new URL(origin ?? `http://${local.host}`)) ?? {},
     localeApps: cloudflare?.zone.redirects.locale ?? [],
     zoneDomain: cloudflare?.zone.domain,
   };

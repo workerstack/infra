@@ -5,8 +5,8 @@ type Allocation = { allocating: () => boolean; toggle: Pick<CfKit, typeof ALLOCA
 
 /**
  * One kit's allocation switch: off, and on only while a run of its `ALLOCATE_RATELIMITS` method is pending. Gen
- * holds the kit object the Worker configs import (the product's `*.cf-kit.ts` export, one module instance), so the
- * switch reaches every limiter those configs build.
+ * holds the kit object the Worker configs import (the default export of the product's `infra.config.ts`, one module
+ * instance), so the switch reaches every limiter those configs build.
  */
 export function ratelimitAllocation(): Allocation {
   let isOn = false;

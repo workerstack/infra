@@ -4,15 +4,14 @@ import { join } from "node:path";
 
 import { afterAll, describe, expect, it } from "vitest";
 
-import { fixtureConfig } from "./__fixtures__/kit-fixtures.ts";
+import { fixtureConfig, fixtureEnv } from "./__fixtures__/kit-fixtures.ts";
 import { ALLOCATE_RATELIMITS } from "./cf-kit.constants.ts";
-import { createCfKit } from "./create-cf-kit.ts";
 import { readRegistry } from "./ratelimit-ids.ts";
 
 const tmp = mkdtempSync(join(tmpdir(), "cf-kit-"));
 const file = join(tmp, "ratelimit-ids.json");
 const limit = { name: "RL_5", simple: { limit: 5, period: 60 } } as const;
-const kit = createCfKit({ config: fixtureConfig(), ratelimitIds: file });
+const kit = fixtureConfig(fixtureEnv(), { ratelimitIds: file });
 
 writeFileSync(file, JSON.stringify({ "acme-api": { dev: { RL_5: 1007 }, prod: { RL_5: 1017 } } }));
 
@@ -32,7 +31,7 @@ describe("ratelimits", () => {
   });
 
   it("fail the same way when the registry file does not exist", () => {
-    const none = createCfKit({ config: fixtureConfig(), ratelimitIds: join(tmp, "missing.json") });
+    const none = fixtureConfig(fixtureEnv(), { ratelimitIds: join(tmp, "missing.json") });
 
     expect(() => none.ratelimits("acme-api", "dev", limit)).toThrow("no rate-limit namespace id for acme-api/dev/RL_5");
   });

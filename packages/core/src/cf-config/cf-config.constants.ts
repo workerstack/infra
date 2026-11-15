@@ -1,8 +1,10 @@
 /** The file a Worker package declares itself in. */
 export const CF_CONFIG_FILE = "cloudflare.config.ts";
 
-/** The suffix of a product's kit file: `web.cf-kit.ts`. */
-export const CF_KIT_SUFFIX = ".cf-kit.ts";
+/** What a leftover kit file fails with, after its path: the kit's options moved into `infra.config.ts`. */
+export const KIT_MOVED_MESSAGE: string =
+  "the kit is built by defineInfraConfig now; " +
+  "move its options to cloudflare.workers in infra.config.ts and delete the file";
 
 /** The file that makes a Worker package a Vite app, which runs in Vite's own dev mode. */
 export const VITE_CONFIG_FILE = "vite.config.ts";

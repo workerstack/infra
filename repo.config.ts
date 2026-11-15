@@ -20,11 +20,6 @@ export default defineConfig({
         reason: "infra gen and infra loc discover it by name; nothing imports it",
       },
       {
-        file: "packages/playground/kit.cf-kit.ts",
-        reason: "infra gen finds the product's one kit by its *.cf-kit.ts name",
-      },
-      { file: "packages/playground/config.ts", reason: "only the ignored infra.config.ts and kit file import it" },
-      {
         file: "packages/playground/api/cloudflare.config.ts",
         reason: "infra gen finds each Worker by its cloudflare.config.ts",
       },

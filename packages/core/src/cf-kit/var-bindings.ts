@@ -17,7 +17,7 @@ function byKey([a]: [string, string], [b]: [string, string]): number {
 export function varBindings({ config }: KitContext): Pick<CfKit, "vars"> {
   return {
     vars: <E extends InfraScope, V extends string>(scope: E, ...keys: V[]) => {
-      const sealed = config.env.sealedKeys(scope);
+      const sealed = config.env.sealedKeys?.(scope) ?? new Set<string>();
 
       const asked = keys
         .filter((key) => key !== ENVIRONMENT_VAR)

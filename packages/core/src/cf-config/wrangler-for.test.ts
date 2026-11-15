@@ -1,14 +1,9 @@
 import { expect, it } from "vitest";
 
-import { fixtureConfig } from "../cf-kit/__fixtures__/kit-fixtures.ts";
-import { createCfKit } from "../cf-kit/create-cf-kit.ts";
+import { fixtureConfig, fixtureEnv } from "../cf-kit/__fixtures__/kit-fixtures.ts";
 import { wranglerFor } from "./wrangler-for.ts";
 
-const kit = createCfKit({
-  config: fixtureConfig(),
-  migrations: { MAIN_DB: { dir: "/repo/db/migrations", owner: "api" } },
-  ratelimitIds: "/repo/ids.json",
-});
+const kit = fixtureConfig(fixtureEnv(), { migrations: { MAIN_DB: { dir: "/repo/db/migrations", owner: "api" } } });
 
 const DIR = "/repo/apps/api";
 
@@ -57,10 +52,8 @@ it("writes main and assets absolute, the bundler keys, and the migrations dir of
 });
 
 it("writes only the migrations dir of a binding whose migrations name a database", () => {
-  const named = createCfKit({
-    config: fixtureConfig(),
+  const named = fixtureConfig(fixtureEnv(), {
     migrations: { MAIN_DB: { database: "main", dir: "/repo/db/migrations", owner: "api" } },
-    ratelimitIds: "/repo/ids.json",
   });
 
   const out = wranglerFor({

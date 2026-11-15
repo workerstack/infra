@@ -1,4 +1,9 @@
 // This file imports only `.ts` files, so Node loads it without a bundler.
+import type { WorkerConfig } from "@cloudflare/config";
+
+import { buildKit } from "./cf-kit/build-kit.ts";
+import type { KeysOf } from "./cf-kit/cf-kit-types.ts";
+import type { CfKit } from "./cf-kit/cf-kit.ts";
 import type { EnvBindings } from "./schema/bindings.ts";
 import type { InfraConfig, InfraConfigInput, InfraEnv } from "./schema/infra.ts";
 import type { LocalConfig } from "./schema/local-config.ts";
@@ -8,23 +13,39 @@ import { parseZoneConfig } from "./schema/zone.ts";
 // and its own subdomains (`api.example.localhost`) stay under it.
 const LOCAL_HOST = /^[a-z0-9-]+\.localhost$/;
 
-type Result<B extends Record<string, EnvBindings>, V extends InfraEnv> = InfraConfig<B, V> & {
-  cloudflare?: { bindings: B };
-};
+// The config, its bindings by name, and the kit typed to those names and the env's keys.
+type Infra<B extends Record<string, EnvBindings>, V extends InfraEnv, D extends Partial<WorkerConfig>> = InfraConfig<
+  B,
+  V
+> & { cloudflare?: { bindings: B } } & CfKit<KeysOf<B, V>, D>;
 
-// Generic in the bindings only, so `cloudflare.bindings` keeps its names and excess properties stay errors.
-// `env` is kept by reference: no value of it is read here.
-export function defineInfraConfig<const B extends Record<string, EnvBindings>, const V extends InfraEnv>(
-  input: InfraConfigInput<B, V>,
-): Result<B, V> {
-  const result: Result<B, V> = { env: input.env };
+/**
+ * A product's infra config and its kit in one value: what `infra.config.ts` default-exports and each Worker's
+ * `cloudflare.config.ts` imports. Generic in the bindings, the env and the Workers' defaults, so binding names keep
+ * their literal types and excess properties stay errors. `env` is kept by reference: no value of it is read here.
+ */
+export function defineInfraConfig<
+  const B extends Record<string, EnvBindings>,
+  const V extends InfraEnv,
+  const D extends Partial<WorkerConfig> = Partial<WorkerConfig>,
+>(input: InfraConfigInput<B, V, D>): Infra<B, V, D>;
+export function defineInfraConfig(input: InfraConfigInput): InfraConfig & CfKit {
+  const config = parsed(input);
+  const kit = buildKit(config);
+
+  return { ...config, ...kit };
+}
+
+function parsed(input: InfraConfigInput): InfraConfig {
+  const result: InfraConfig = { env: input.env };
 
   if (input.cloudflare !== undefined) {
     result.cloudflare = {
       access: input.cloudflare.access,
-      bindings: input.cloudflare.bindings ?? ({} /* an empty record has no names to lose */ as B),
+      bindings: input.cloudflare.bindings ?? {},
       r2: input.cloudflare.r2,
       turnstile: input.cloudflare.turnstile,
+      workers: input.cloudflare.workers,
       zone: parseZoneConfig(input.cloudflare.zone),
     };
   }

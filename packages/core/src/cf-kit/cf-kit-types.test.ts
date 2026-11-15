@@ -2,7 +2,6 @@ import { defineEnv } from "@workerstack/repo/env";
 import { expectTypeOf, it } from "vitest";
 
 import { defineInfraConfig } from "../define-infra-config.ts";
-import { createCfKit } from "./create-cf-kit.ts";
 
 const env = defineEnv({ dev: {}, global: {}, local: { APEX_DOMAIN: "localhost" }, prod: {} });
 
@@ -19,7 +18,7 @@ const config = defineInfraConfig({
   env,
 });
 
-const kit = createCfKit({ config, ratelimitIds: "ratelimit-ids.json" });
+const kit = config;
 
 it("accepts the names the config and env declare", () => {
   expectTypeOf(kit.d1("local", "MAIN_DB")).toHaveProperty("MAIN_DB");

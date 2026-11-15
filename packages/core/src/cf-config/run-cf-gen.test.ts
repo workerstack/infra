@@ -14,6 +14,8 @@ import { runCfGen } from "./run-cf-gen.ts";
 
 const GEN_TIMEOUT = 30_000;
 
+const SRC = join(import.meta.dirname, "..");
+
 const { runTypes } = fakeTypes();
 
 afterEach(cleanCopies);
@@ -126,7 +128,7 @@ it(
   "fails a declared secret with no value, naming the key and the scope",
   async () => {
     const { product } = copyProduct();
-    const kitFile = join(product.root, "web.cf-kit.ts");
+    const kitFile = join(product.root, "infra.config.ts");
 
     writeFileSync(
       kitFile,
@@ -136,6 +138,60 @@ it(
     await expect(runCfGen({ check: false, log: logLines().log, product, runTypes })).rejects.toThrow(
       "API_KEY has no dev value in env",
     );
+  },
+  GEN_TIMEOUT,
+);
+
+const LEAN_INFRA = `import { defineInfraConfig } from "../../../define-infra-config.ts";
+
+export default defineInfraConfig({
+  cloudflare: { zone: { domain: "example.com", zoneId: "${"z".repeat(32)}" } },
+  env: { dev: { GREETING: "hi dev" }, global: {}, local: { GREETING: "hi local" }, prod: { GREETING: "hi prod" } },
+  local: { host: "example.localhost" },
+});
+`;
+
+const LEAN_WORKER = `import { defineConfig } from "cf/config";
+
+import infra from "../infra.config.ts";
+
+export default defineConfig(({ mode }) => {
+  const scope = infra.scope(mode);
+
+  return {
+    worker: {
+      compatibilityDate: "2026-01-20",
+      entrypoint: "./src/index.ts",
+      env: {
+        ...infra.ratelimits("web-api", scope, { name: "LIMIT_5", simple: { limit: 5, period: 60 } }),
+        ...infra.vars(scope, "GREETING"),
+      },
+      name: infra.name("web-api", scope),
+    },
+  };
+});
+`;
+
+it(
+  "generates a lean product, no sealedKeys, local.vars or ratelimitIds, its ids in the product root's registry",
+  async () => {
+    const { product } = copyProduct();
+
+    writeFileSync(join(product.root, "infra.config.ts"), LEAN_INFRA.replaceAll("../../../", `${SRC}/`));
+    writeFileSync(join(product.root, "api/cloudflare.config.ts"), LEAN_WORKER);
+    await runCfGen({ check: false, log: logLines().log, product, runTypes });
+
+    const ids = json(join(product.root, "ratelimit-ids.json"));
+
+    expect(objectAt(ids, "web-api")).toStrictEqual({
+      dev: { LIMIT_5: 2 },
+      local: { LIMIT_5: 1 },
+      prod: { LIMIT_5: 3 },
+    });
+    expect(existsSync(join(product.root, "api/.dev.vars.local"))).toBe(false);
+    expect(json(join(product.root, "api/.cloudflare/wrangler.prod.json"))).toMatchObject({
+      vars: { GREETING: "hi prod" },
+    });
   },
   GEN_TIMEOUT,
 );

@@ -1,5 +1,6 @@
 import { defineInfraConfig } from "../../define-infra-config.ts";
 import type { InfraEnv } from "../../schema/infra.ts";
+import type { CloudflareWorkers } from "../../schema/workers.ts";
 import { fakeInfraEnv } from "../../shared/__fixtures__/fake-infra-env.ts";
 
 const ID_LENGTH = 32;
@@ -37,8 +38,11 @@ function bindings(scope: string) {
   };
 }
 
-/** A config over `env` with a zone, R2 credentials, a dev turnstile widget and bindings in every scope. */
-export function fixtureConfig(env: InfraEnv = fixtureEnv()) {
+/**
+ * A config over `env` with a zone, R2 credentials, a dev turnstile widget, bindings in every scope and the
+ * Workers' options `workers`; its value is the kit too.
+ */
+export function fixtureConfig(env: InfraEnv = fixtureEnv(), workers: CloudflareWorkers = {}) {
   return defineInfraConfig({
     cloudflare: {
       bindings: {
@@ -54,6 +58,7 @@ export function fixtureConfig(env: InfraEnv = fixtureEnv()) {
       turnstile: {
         dev: { domains: ["dev.acme.ai"], mode: "managed", name: "dev", siteKey: "site-dev" },
       },
+      workers,
       zone: { domain: "acme.ai", zoneId: "z".repeat(ID_LENGTH) },
     },
     env,

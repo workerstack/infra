@@ -129,9 +129,10 @@ it("keeps binding names in the return type", () => {
   expect(bindings?.prod.kv_namespaces.CACHE).toStrictEqual({ id: "abc" });
 });
 
-it("keeps env as the same object", () => {
+it("keeps env's views by reference", () => {
   const config = defineInfraConfig({ env });
 
+  expect(config.env.local).toBe(env.local);
   expect(config.env).toBe(env);
 });
 
@@ -146,7 +147,9 @@ it("defines without reading an env value", () => {
     sealedKeys: () => new Set(),
   };
 
-  expect(defineInfraConfig({ env: throwing }).env).toBe(throwing);
+  const config = defineInfraConfig({ env: throwing });
+
+  expect(() => config.env.global).toThrow("read");
 });
 
 it("takes a real defineEnv instance as env", () => {
@@ -173,7 +176,7 @@ it("keeps the env type so a kit can check key names", () => {
   const real = defineEnv({ dev: {}, global: {}, local: { GREETING: "hi" }, prod: {} });
   const config = defineInfraConfig({ env: real });
 
-  expectTypeOf(config.env).toEqualTypeOf<typeof real>();
+  expectTypeOf(config.env).toExtend<typeof real>();
   expectTypeOf(config.env.local).toHaveProperty("GREETING");
   // @ts-expect-error NOPE is not a key of the env's local view
   expectTypeOf(config.env.local).toHaveProperty("NOPE");

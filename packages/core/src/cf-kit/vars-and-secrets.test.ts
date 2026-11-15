@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { defineInfraConfig } from "../define-infra-config.ts";
 import type { InfraEnv } from "../schema/infra.ts";
 import { fakeInfraEnv } from "../shared/__fixtures__/fake-infra-env.ts";
 import { fixtureConfig, fixtureEnv } from "./__fixtures__/kit-fixtures.ts";
-import { createCfKit } from "./create-cf-kit.ts";
 
-const kit = createCfKit({ config: fixtureConfig(), ratelimitIds: "ratelimit-ids.json" });
+const kit = fixtureConfig();
 
 describe("vars", () => {
   it("writes ENVIRONMENT and the plain keys of the scope as text bindings", () => {
@@ -17,7 +17,7 @@ describe("vars", () => {
 
   it("takes ENVIRONMENT from the scope's own values when they set it", () => {
     const env = fakeInfraEnv({ dev: { ENVIRONMENT: "staging", SITE: "s" } });
-    const own = createCfKit({ config: fixtureConfig(env), ratelimitIds: "r.json" });
+    const own = fixtureConfig(env);
 
     expect(own.vars("dev", "SITE")).toStrictEqual({
       ENVIRONMENT: { type: "text", value: "staging" },
@@ -53,7 +53,7 @@ describe("secrets", () => {
   it("names the first scope that holds the key in plain text", () => {
     const base = fixtureEnv();
     const env: InfraEnv = { ...base, sealedKeys: (scope) => (scope === "prod" ? new Set() : new Set(["GREETING"])) };
-    const mixed = createCfKit({ config: fixtureConfig(env), ratelimitIds: "r.json" });
+    const mixed = fixtureConfig(env);
 
     expect(() => mixed.secrets("GREETING")).toThrow(
       "GREETING is not sealed in prod; a secret must be sealed: bun repo env set GREETING --scope prod",
@@ -80,7 +80,7 @@ describe("infra values", () => {
   });
 
   it("fail naming the key and scope when infra has no value", () => {
-    const bare = createCfKit({ config: { env: fakeInfraEnv() }, ratelimitIds: "r.json" });
+    const bare = defineInfraConfig({ env: fakeInfraEnv() });
 
     expect(() => bare.vars("dev", "CF_ZONE_ID")).toThrow("CF_ZONE_ID has no dev value in infra");
   });

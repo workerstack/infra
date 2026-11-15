@@ -1,10 +1,10 @@
 import { bindings, defineConfig, defineContainer, exports } from "cf/config";
 
-import { kit } from "../stack.cf-kit.ts";
+import infra from "../infra.config.ts";
 
 export default defineConfig(({ mode }) => {
-  const env = kit.env(mode);
-  const name = kit.name("stack-box", env);
+  const scope = infra.scope(mode);
+  const name = infra.name("stack-box", scope);
   const container = defineContainer({ image: { reference: "registry.example/box:1" }, maxInstances: 1, name });
 
   return {
@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
       env: { BOX: bindings.durableObject({ exportName: "Box", worker: name }) },
       exports: { Box: exports.durableObject({ container, storage: "sqlite" }) },
       name,
-      triggers: env === "prod" ? kit.routes(["example.com/box*"], "example.com") : [],
+      triggers: scope === "prod" ? infra.routes(["example.com/box*"], "example.com") : [],
     },
   };
 });

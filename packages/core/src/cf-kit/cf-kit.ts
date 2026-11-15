@@ -16,23 +16,26 @@ import type {
 
 import type { InfraScope } from "../schema/infra.ts";
 import type { BindingNames, QueueConsumerSpec, RatelimitSpec } from "./cf-kit-types.ts";
-import type { ALLOCATE_RATELIMITS, CF_KIT } from "./cf-kit.constants.ts";
+import type { ALLOCATE_RATELIMITS, CF_KIT, PRODUCT_ROOT } from "./cf-kit.constants.ts";
 
 /**
- * The typed helpers a Worker's `cloudflare.config.ts` builds its bindings with. Declared with method syntax, so the
- * kit typed to its product's names also reads as the kit that accepts any name (`CfKit`).
+ * The typed helpers a Worker's `cloudflare.config.ts` builds its bindings with, on the value `defineInfraConfig`
+ * returns. Declared with method syntax, so the kit typed to its product's names also reads as the kit that accepts
+ * any name (`CfKit`).
  */
 export type CfKit<K extends BindingNames = BindingNames, D extends Partial<WorkerConfig> = Partial<WorkerConfig>> = {
   readonly [CF_KIT]: true;
   /** Runs `run` with rate-limit allocation on: what `infra gen` wraps its loads of the product's configs in. */
   [ALLOCATE_RATELIMITS]<T>(run: () => Promise<T>): Promise<T>;
+  /** Takes the product root from the loader of `infra.config.ts`: where the unset rate-limit registry lives. */
+  [PRODUCT_ROOT](root: string): void;
   aiSearch<N extends K["ai_search"]>(env: K["env"], ...names: N[]): Record<N, AiSearchBinding>;
   analytics<N extends K["analytics"]>(env: K["env"], ...names: N[]): Record<N, AnalyticsEngineDatasetBinding>;
   /** What every Worker of the product shares; a config spreads it first and overrides after. */
   readonly defaults: D;
   d1<N extends K["d1"]>(env: K["env"], ...names: N[]): Record<N, D1Binding>;
   /** The scope for a `--mode`; Vite's dev default, `development`, is `local`. */
-  env(mode: string | undefined): K["env"];
+  scope(mode: string | undefined): K["env"];
   /** Every scope the kit's Workers deploy or run as: what `infra gen` loops over. */
   readonly envs: readonly InfraScope[];
   kv<N extends K["kv"]>(env: K["env"], ...names: N[]): Record<N, KvBinding>;
@@ -61,8 +64,11 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
   queue<N extends K["queue"]>(env: K["env"], ...names: N[]): Record<N, QueueBinding>;
   queueConsumers(env: K["env"], consumers: readonly QueueConsumerSpec<K["queue"]>[]): QueueConsumerTrigger[];
   r2<N extends K["r2"]>(env: K["env"], ...names: N[]): Record<N, R2Binding>;
-  /** The registry file the limiters' namespace ids live in. */
-  readonly ratelimitIds: string;
+  /**
+   * The registry file the limiters' namespace ids live in: `cloudflare.workers.ratelimitIds`, else
+   * `ratelimit-ids.json` at the product root the kit was handed.
+   */
+  ratelimitFile(): string;
   /** Limits by name; each namespace id is the registry's, so a limiter keeps its counters. */
   ratelimits<const N extends string>(
     worker: string,

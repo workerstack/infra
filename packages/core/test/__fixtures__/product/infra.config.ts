@@ -1,3 +1,5 @@
+import { join } from "node:path";
+
 import { defineInfraConfig } from "../../../src/define-infra-config.ts";
 
 const ID_LENGTH = 32;
@@ -16,6 +18,9 @@ function bindings(scope: string) {
 export default defineInfraConfig({
   cloudflare: {
     bindings: { dev: bindings("dev"), local: bindings("local"), prod: bindings("prod") },
+    workers: {
+      migrations: { DB: { database: "main", dir: join(import.meta.dirname, "db/migrations"), owner: "web-api" } },
+    },
     zone: { domain: "example.com", zoneId: "z".repeat(ID_LENGTH) },
   },
   env: {

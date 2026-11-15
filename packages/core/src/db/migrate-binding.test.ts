@@ -2,8 +2,7 @@ import { join } from "node:path";
 
 import { expect, it } from "vitest";
 
-import { fixtureConfig } from "../cf-kit/__fixtures__/kit-fixtures.ts";
-import { createCfKit } from "../cf-kit/create-cf-kit.ts";
+import { fixtureConfig, fixtureEnv } from "../cf-kit/__fixtures__/kit-fixtures.ts";
 import { fakeDbIo } from "./__fixtures__/fake-db-io.ts";
 import { FIXTURE_ROOT, fixtureProduct } from "./__fixtures__/fixture-product.ts";
 import { type MigrateInput, migrateBinding } from "./migrate-binding.ts";
@@ -13,7 +12,7 @@ const DIR = join(FIXTURE_ROOT, "db/migrations");
 function input(database: string | undefined, name: string | null = "web-prod"): MigrateInput & { spawned: string[] } {
   const { events, io } = fakeDbIo();
   const migrations = { MAIN_DB: { ...(database === undefined ? {} : { database }), dir: DIR, owner: "web-api" } };
-  const kit = createCfKit({ config: fixtureConfig(), migrations, ratelimitIds: "r.json" });
+  const kit = fixtureConfig(fixtureEnv(), { migrations });
 
   return {
     binding: "MAIN_DB",
@@ -51,10 +50,8 @@ it("fails a binding with no database_name before spawning", async () => {
 it("fails naming the migrations dir when no database.migrate.config.ts is above it", async () => {
   const given = {
     ...input("main"),
-    kit: createCfKit({
-      config: fixtureConfig(),
+    kit: fixtureConfig(fixtureEnv(), {
       migrations: { MAIN_DB: { database: "main", dir: join(FIXTURE_ROOT, "api/src"), owner: "web-api" } },
-      ratelimitIds: "r.json",
     }),
   };
 
