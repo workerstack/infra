@@ -15,7 +15,7 @@ import type {
 } from "@cloudflare/config";
 
 import type { InfraScope } from "../schema/infra.ts";
-import type { BindingNames, QueueConsumerSpec, RatelimitSpec } from "./cf-kit-types.ts";
+import type { BindingNames, EnvKeyRef, KeyPick, QueueConsumerSpec, RatelimitSpec } from "./cf-kit-types.ts";
 import type { ALLOCATE_RATELIMITS, CF_KIT, PRODUCT_ROOT } from "./cf-kit.constants.ts";
 import type { WorkerOptions } from "./worker-options.ts";
 
@@ -78,10 +78,10 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
   ): Record<N, RateLimitBinding>;
   routes(patterns: readonly string[], zone: string): FetchTrigger[];
   /**
-   * Secrets by name: the binding only. A key must be sealed in every scope; the values go up with a deploy and run
-   * locally from `.dev.vars.local`.
+   * Secrets picked off the env: `secrets((env) => [env.API_KEY])`, the binding only. A key must be sealed in every
+   * scope; the values go up with a deploy and run locally from `.dev.vars.local`.
    */
-  secrets<S extends K["secret"]>(...keys: S[]): Record<S, SecretBinding>;
+  secrets<R extends EnvKeyRef>(pick: KeyPick<K["secrets"], R>): Record<R["key"], SecretBinding>;
   /**
    * The values of the secrets a Worker declares, for one scope: what a deploy uploads and `.dev.vars.<scope>`
    * holds. A secret with no value fails naming the key and scope.
@@ -94,12 +94,12 @@ export type CfKit<K extends BindingNames = BindingNames, D extends Partial<Worke
   ): Record<keyof S & string, WorkerBinding>;
   /**
    * `ENVIRONMENT` is always written, the scope's own value when it sets one, else the scope name; then the vars
-   * asked for, which must not be sealed.
+   * picked, `vars(scope, (env) => [env.GREETING])`, which must not be sealed.
    */
-  vars<E extends K["env"], V extends K["var"]>(
+  vars<E extends K["env"], R extends EnvKeyRef>(
     env: E,
-    ...keys: V[]
-  ): Record<V, TextBinding> & { ENVIRONMENT: TextBinding<E> };
+    pick: KeyPick<K["vars"], R>,
+  ): Record<R["key"], TextBinding> & { ENVIRONMENT: TextBinding<E> };
   /**
    * A Worker's whole config from its base name and the names of what it binds: what `defineConfig` of `cf/config`
    * takes, so a `cloudflare.config.ts` default-exports it as is. Built per mode: the defaults, the scoped name, each

@@ -2,6 +2,7 @@ import type { InfraConfig } from "../schema/infra.ts";
 import { CF_KIT } from "./cf-kit.constants.ts";
 import type { CfKit } from "./cf-kit.ts";
 import { configFacts } from "./config-facts.ts";
+import { keyMap } from "./key-map.ts";
 import { kitModes } from "./kit-modes.ts";
 import { migrationsDir } from "./migrations-dir.ts";
 import { queueBindings } from "./queue-bindings.ts";
@@ -22,7 +23,7 @@ import { workerShorthand } from "./worker-shorthand.ts";
  */
 export function buildKit(config: InfraConfig): CfKit {
   const workers = config.cloudflare?.workers ?? {};
-  const context = { config, localRemote: new Set(workers.localRemote) };
+  const context = { config, keys: keyMap(config), localRemote: new Set(workers.localRemote) };
   const allocation = ratelimitAllocation();
   const registry = ratelimitRegistry(workers.ratelimitIds);
 

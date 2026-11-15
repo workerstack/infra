@@ -38,3 +38,9 @@ export const RATELIMIT_IDS_FILE = "ratelimit-ids.json";
 /** The failure for a limiter whose kit has no registry: none set, no root handed to it, none above the cwd. */
 export const NO_REGISTRY_MESSAGE =
   "no rate-limit registry: set cloudflare.workers.ratelimitIds in infra.config.ts, or run inside the product";
+
+/**
+ * Marks a key ref, the value a pick reads off its `env` map: it names a key, not a value. A registered symbol, like
+ * `CF_KIT`.
+ */
+export const ENV_KEY_REF: unique symbol = /* @__PURE__ */ Symbol.for("@workerstack/infra/env-key-ref");

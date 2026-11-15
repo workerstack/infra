@@ -164,7 +164,7 @@ export default defineConfig(({ mode }) => {
       entrypoint: "./src/index.ts",
       env: {
         ...infra.ratelimits("web-api", scope, { name: "LIMIT_5", simple: { limit: 5, period: 60 } }),
-        ...infra.vars(scope, "GREETING"),
+        ...infra.vars(scope, (env) => [env.GREETING]),
       },
       name: infra.name("web-api", scope),
     },

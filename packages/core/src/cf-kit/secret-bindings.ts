@@ -3,15 +3,18 @@ import { bindings } from "@cloudflare/config";
 import { INFRA_SCOPES } from "../shared/infra-scopes.constants.ts";
 import type { CfKit } from "./cf-kit.ts";
 import { each } from "./each.ts";
+import { pickedKeys } from "./key-map.ts";
 import type { KitContext } from "./kit-context.ts";
 
 /**
- * Secrets by name: the binding only. A key must be sealed in every scope, so no plain value is ever uploaded as a
- * secret.
+ * Secrets picked off the env: the binding only. A key must be sealed in every scope, so no plain value is ever
+ * uploaded as a secret.
  */
-export function secretBindings({ config }: KitContext): Pick<CfKit, "secrets"> {
+export function secretBindings({ config, keys: map }: KitContext): Pick<CfKit, "secrets"> {
   return {
-    secrets: (...keys) => {
+    secrets: (pick) => {
+      const keys = pickedKeys(pick(map));
+
       for (const scope of INFRA_SCOPES) {
         const sealed = config.env.sealedKeys?.(scope) ?? new Set<string>();
         const plain = keys.find((key) => !sealed.has(key));

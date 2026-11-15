@@ -28,14 +28,19 @@ it("returns a kit beside the config, with no sealedKeys, local.vars or ratelimit
   expect(isCfKit(infra)).toBe(true);
   expect(infra.scope("development")).toBe("local");
   expect(infra.env.local.GREETING).toBe("hi");
-  expect(infra.vars("local", "GREETING")).toStrictEqual({
+  expect(infra.vars("local", (env) => [env.GREETING])).toStrictEqual({
     ENVIRONMENT: { type: "text", value: "local" },
     GREETING: { type: "text", value: "hi" },
   });
   expect(infra.d1("local", "DB")).toStrictEqual({ DB: { id: "db-id", name: "db", type: "d1" } });
   expect(infra.localUrlVars()).toStrictEqual({});
-  expect(() => infra.secrets("GREETING")).toThrow("GREETING is not sealed in local");
+  expect(() => infra.secrets((env) => [env.GREETING])).toThrow("GREETING is not sealed in local");
 });
+
+// Reads a key without returning it: a property the map lacks stays a compile error, and the pick returns nothing.
+function none(..._keys: unknown[]): never[] {
+  return [];
+}
 
 // Never called: each line is a compile error, not a run-time check.
 function rejectedNames() {
@@ -44,7 +49,7 @@ function rejectedNames() {
   // @ts-expect-error NOPE is no d1 binding of the config
   infra.d1("local", "NOPE");
   // @ts-expect-error NOPE is no key of the env's views
-  infra.vars("local", "NOPE");
+  infra.vars("local", (env) => none(env.NOPE));
 }
 
 it("types the kit's binding names from the config", () => {

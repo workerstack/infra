@@ -24,3 +24,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - BREAKING: infra.config.ts is the product's one file: defineInfraConfig returns the config and the kit, createCfKit and *.cf-kit.ts are gone (a leftover kit file fails infra gen), the kit's options move to cloudflare.workers, and env.sealedKeys, local.vars and cloudflare.workers.ratelimitIds are optional (ratelimit-ids.json at the product root)
+- BREAKING: `vars` and `secrets` of `infra.worker`, `infra.vars` and `infra.secrets` take a pick by property, `(env) => [env.GREETING]`, where they took key strings (`vars: ["GREETING"]`); the vars map holds no sealed key and the secrets map only sealed keys

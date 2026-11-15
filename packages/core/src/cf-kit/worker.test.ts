@@ -35,8 +35,8 @@ const long = defineConfig(({ mode }) => {
       env: {
         ...infra.d1(scope, "DB"),
         ...infra.ratelimits("web-api", scope, { name: "LIMIT_5", simple: { limit: LIMIT, period: PERIOD } }),
-        ...infra.secrets("API_KEY"),
-        ...infra.vars(scope, "GREETING", "SITE_URL"),
+        ...infra.secrets((e) => [e.API_KEY]),
+        ...infra.vars(scope, (e) => [e.GREETING, e.SITE_URL]),
       },
       name: infra.name("web-api", scope),
       triggers: infra.routes(["example.com/api/*"], "example.com"),
@@ -56,13 +56,28 @@ it.each(infra.envs)("gives the config the long form gives in %s", async (scope) 
   expect(await parsed(short, scope)).toStrictEqual(await parsed(long, scope));
 });
 
+// The same Worker written with picks by property, whatever the fixture file holds.
+const picked = infra.worker("web-api", {
+  compatibilityDate: "2026-01-20",
+  d1: ["DB"],
+  entrypoint: "./src/index.ts",
+  ratelimits: [{ name: "LIMIT_5", simple: { limit: LIMIT, period: PERIOD } }],
+  routes: ["example.com/api/*"],
+  secrets: (e) => [e.API_KEY],
+  vars: (e) => [e.GREETING, e.SITE_URL],
+});
+
+it.each(infra.envs)("gives the long form's config from picks in %s", async (scope) => {
+  expect(await parsed(picked, scope)).toStrictEqual(await parsed(long, scope));
+});
+
 it("merges extra last: its env beside the shorthand's, its triggers after the routes", () => {
   const config = infra.worker("web-api", {
     compatibilityDate: "2026-01-20",
     entrypoint: "./src/index.ts",
-    extra: (scope) => ({ env: { ...infra.vars(scope, "SITE_URL") }, observability: { enabled: true } }),
+    extra: (scope) => ({ env: { ...infra.vars(scope, (e) => [e.SITE_URL]) }, observability: { enabled: true } }),
     routes: ["example.com/x/*"],
-    vars: ["GREETING"],
+    vars: (e) => [e.GREETING],
     zone: "other.com",
   });
 

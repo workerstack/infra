@@ -1,5 +1,5 @@
 {
-  // exclude replaces tsconfig.json's own: its entries, then the tests and the tool-loaded config files
-  "exclude": ["node_modules", ".tmp", ".cloudflare", ".wrangler", "**/*.test.ts", "**/*.config.ts"],
+  // exclude replaces tsconfig.json's own: its entries, then the tests and the tool-loaded config and env files
+  "exclude": ["node_modules", ".tmp", ".cloudflare", ".wrangler", "**/*.test.ts", "**/*.config.ts", "**/*.env.ts"],
   "extends": ["./tsconfig.json", "@workerstack/repo/tsconfig/strict"]
 }

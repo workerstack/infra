@@ -22,7 +22,7 @@ export function fixtureEnv(): InfraEnv {
     {
       dev: view("dev"),
       global: { CLOUDFLARE_ACCOUNT_ID: "a".repeat(ID_LENGTH) },
-      local: view("local"),
+      local: { ...view("local"), MISSING: "set in local only" },
       prod: view("prod"),
     },
     FIXTURE_SEALED,

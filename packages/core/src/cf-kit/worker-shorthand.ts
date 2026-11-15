@@ -27,9 +27,9 @@ function bindingsOf(built: Built): Env {
     ...storageOf(built),
     ...kit.queue(scope, ...(options.queue ?? [])),
     ...kit.ratelimits(base, scope, ...(options.ratelimits ?? [])),
-    ...kit.secrets(...(options.secrets ?? [])),
+    ...kit.secrets((env) => options.secrets?.(env) ?? []),
     ...kit.services(scope, options.services ?? {}),
-    ...(options.vars === undefined ? {} : kit.vars(scope, ...options.vars)),
+    ...(options.vars === undefined ? {} : kit.vars(scope, (env) => options.vars?.(env) ?? [])),
   };
 }
 

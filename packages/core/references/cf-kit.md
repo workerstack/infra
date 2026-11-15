@@ -31,8 +31,8 @@ export default infra.worker("api", {
   d1: ["DB"],
   entrypoint: "./src/index.worker.ts",
   routes: ["example.com/api/*"],
-  secrets: ["API_KEY"],
-  vars: ["GREETING"],
+  secrets: (env) => [env.API_KEY],
+  vars: (env) => [env.GREETING],
 });
 ```
 
@@ -52,7 +52,11 @@ export default defineConfig(({ mode }) => {
   return {
     worker: {
       ...infra.defaults,
-      env: { ...infra.d1(scope, "DB"), ...infra.secrets("API_KEY"), ...infra.vars(scope, "GREETING") },
+      env: {
+        ...infra.d1(scope, "DB"),
+        ...infra.secrets((env) => [env.API_KEY]),
+        ...infra.vars(scope, (env) => [env.GREETING]),
+      },
       entrypoint: "./src/index.worker.ts",
       name: infra.name("api", scope),
     },
@@ -91,8 +95,10 @@ infra gen: apps/web: web.cf-kit.ts: the kit is built by defineInfraConfig now; m
 
 ## Sealed and plain
 
-- `infra.vars(scope, ...keys)` takes plain values. A sealed key never lands in a var.
-- `infra.secrets(...keys)` takes sealed values. A key must be sealed in `local`, `dev` and `prod`, because a secret goes up with a deploy and runs locally from `.dev.vars.local`. With no `sealedKeys` on the env, nothing is sealed, so a product with secrets gives it.
+Keys are picked by property, never by string: `vars: (env) => [env.GREETING]`, `secrets: (env) => [env.API_KEY]`, `infra.vars(scope, (env) => [...])` and `infra.secrets((env) => [...])`. A property gives rename, find-references and go-to-definition, and the vars map holds no sealed key while the secrets map holds only sealed keys, so a wrong pick is an editor error.
+
+- `infra.vars(scope, pick)` takes plain values. A sealed key never lands in a var.
+- `infra.secrets(pick)` takes sealed values. A key must be sealed in `local`, `dev` and `prod`, because a secret goes up with a deploy and runs locally from `.dev.vars.local`. With no `sealedKeys` on the env, nothing is sealed, so a product with secrets gives it.
 - A secret with no value in a scope fails naming the key and scope.
 
 The two errors, each printed as `infra gen: <product>: <message>`:

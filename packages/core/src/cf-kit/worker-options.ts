@@ -1,7 +1,7 @@
 import type { WorkerConfig } from "@cloudflare/config";
 
 import type { InfraScope } from "../schema/infra.ts";
-import type { BindingNames, RatelimitSpec } from "./cf-kit-types.ts";
+import type { BindingNames, KeyPick, RatelimitSpec } from "./cf-kit-types.ts";
 
 /**
  * What `infra.worker` builds a Worker from: each binding kind by its names, as the kit's method of that name takes
@@ -21,10 +21,11 @@ export type WorkerOptions<K extends BindingNames = BindingNames> = {
   ratelimits?: readonly RatelimitSpec[];
   /** Route patterns on `zone`, else on the config's zone. */
   routes?: readonly string[];
-  secrets?: readonly K["secret"][];
+  /** The sealed keys to grant, picked off the env: `(env) => [env.API_KEY]`. */
+  secrets?(env: K["secrets"]): ReturnType<KeyPick<K["secrets"]>>;
   /** Service bindings by the target Worker's base name, as `services` takes them. */
   services?: Readonly<Record<string, string>>;
-  /** The vars beside `ENVIRONMENT`; unset, the Worker gets no vars. */
-  vars?: readonly K["var"][];
+  /** The plain keys beside `ENVIRONMENT`, picked: `(env) => [env.GREETING]`; unset, the Worker gets no vars. */
+  vars?(env: K["vars"]): ReturnType<KeyPick<K["vars"]>>;
   zone?: string;
 };
