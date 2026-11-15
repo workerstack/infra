@@ -69,6 +69,7 @@
     ".githooks/commit-msg": true,
     ".githooks/pre-commit": true,
     ".githooks/pre-push": true,
+    ".githooks/reference-transaction": true,
     ".github/dependabot.yml": true,
     ".github/workflows/ci.yml": true,
     ".github/workflows/nightly.yml": true,

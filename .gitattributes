@@ -1,8 +1,9 @@
-# repo:generated ca3cc5b9
+# repo:generated aaa0633a
 * text=auto eol=lf
 .githooks/commit-msg linguist-generated
 .githooks/pre-commit linguist-generated
 .githooks/pre-push linguist-generated
+.githooks/reference-transaction linguist-generated
 .github/dependabot.yml linguist-generated
 .github/workflows/ci.yml linguist-generated
 .github/workflows/nightly.yml linguist-generated
