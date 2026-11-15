@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { fakeInfraEnv } from "../shared/__fixtures__/fake-infra-env.ts";
 import { accountAuth } from "./auth.ts";
-
-const NO_SCOPES = { dev: {}, local: {}, prod: {} };
 
 const global = {
   CLOUDFLARE_ACCOUNT_EMAIL: "ops@example.com",
@@ -12,14 +11,14 @@ const global = {
 
 describe("accountAuth", () => {
   it("uses the API token when the env has one", () => {
-    expect(accountAuth({ ...NO_SCOPES, global: { ...global, CLOUDFLARE_API_TOKEN: "tok" } })).toStrictEqual({
+    expect(accountAuth(fakeInfraEnv({ global: { ...global, CLOUDFLARE_API_TOKEN: "tok" } }))).toStrictEqual({
       token: "tok",
       type: "token",
     });
   });
 
   it("falls back to the email and global key", () => {
-    expect(accountAuth({ ...NO_SCOPES, global })).toStrictEqual({
+    expect(accountAuth(fakeInfraEnv({ global }))).toStrictEqual({
       email: "ops@example.com",
       key: "key",
       type: "global-key",
@@ -27,6 +26,6 @@ describe("accountAuth", () => {
   });
 
   it("throws the fix line for a missing credential", () => {
-    expect(() => accountAuth({ ...NO_SCOPES, global: {} })).toThrow("has no global value");
+    expect(() => accountAuth(fakeInfraEnv({ global: {} }))).toThrow("has no global value");
   });
 });

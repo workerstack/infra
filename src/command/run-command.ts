@@ -33,7 +33,7 @@ export async function runCommand(spec: CommandSpec, args: readonly string[], hos
   const parsed = parseTarget(args);
 
   if (parsed === undefined) {
-    host.stderr(`usage: infra ${spec.name} [name|--all]`);
+    host.stderr(`usage: infra ${spec.name} [name|--all]${spec.usageFlags === undefined ? "" : ` ${spec.usageFlags}`}`);
 
     return USAGE_EXIT;
   }

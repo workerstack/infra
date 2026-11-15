@@ -1,5 +1,6 @@
 import type { InfraEnv } from "../../schema/infra.ts";
 import type { AppleConfig } from "../../schema/apple.ts";
+import { fakeInfraEnv } from "../../shared/__fixtures__/fake-infra-env.ts";
 
 /** A PEM-wrapped PKCS8 P-256 key made for a test. */
 export async function applePrivateKey(): Promise<string> {
@@ -24,5 +25,5 @@ export const appleConfig: AppleConfig = {
 
 /** An env whose prod view holds `privateKey` (or no key). */
 export function appleEnv(privateKey: string | undefined): InfraEnv {
-  return { dev: {}, global: {}, local: {}, prod: privateKey === undefined ? {} : { APPLE_PRIVATE_KEY: privateKey } };
+  return fakeInfraEnv({ prod: privateKey === undefined ? {} : { APPLE_PRIVATE_KEY: privateKey } });
 }

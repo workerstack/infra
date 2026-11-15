@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 
 import { cloudflareConfig } from "../runner/__fixtures__/cloudflare-config.ts";
-import { fakeSetDeps } from "./__fixtures__/set-deps.ts";
+import { fakeRedirect, fakeSetDeps } from "./__fixtures__/set-deps.ts";
 import { product, testHost } from "./__fixtures__/test-host.ts";
 import { runSet } from "./run-set.ts";
 
@@ -27,6 +27,7 @@ it("set runs the runners in the old order, writes ids once, then sends every sec
     "bindings",
     "access",
     "ai-search",
+    "redirects",
     "zone",
     "microsoft",
     "write-config",
@@ -34,6 +35,13 @@ it("set runs the runners in the old order, writes ids once, then sends every sec
   ]);
   expect(trace.files.get(FILE)).toBe('kv: { id: "kv1" }, microsoft: { clientId: "app1" }');
   expect(trace.secrets).toStrictEqual([results.turnstile, results.access, results.microsoft]);
+});
+
+it("set applies the zone with the redirect list zoneRedirects builds from the product root", async () => {
+  const { deps, trace } = fakeSetDeps({ [FILE]: CONFIG }, results);
+
+  expect(await runSet([], testHost([web]).host, deps)).toBe(0);
+  expect(trace.redirects).toStrictEqual([[fakeRedirect("/repo/apps/web")]]);
 });
 
 it("no secret value appears in the written config text", async () => {

@@ -1,5 +1,6 @@
 import type { GoogleConfig } from "../../schema/google.ts";
 import type { InfraEnv } from "../../schema/infra.ts";
+import { fakeInfraEnv } from "../../shared/__fixtures__/fake-infra-env.ts";
 
 /** A PEM-wrapped PKCS8 RSA key made for a test. */
 export async function googlePrivateKey(): Promise<string> {
@@ -34,5 +35,5 @@ export const googleConfig: GoogleConfig = {
 export function googleEnv(privateKey: string | undefined): InfraEnv {
   const global = privateKey === undefined ? {} : { GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: privateKey };
 
-  return { dev: {}, global, local: {}, prod: {} };
+  return fakeInfraEnv({ global });
 }

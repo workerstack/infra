@@ -34,7 +34,9 @@ export async function setCloudflare(deps: SetDeps, product: Product, run: SetRun
 
   await deps.provisionAiSearch({ accountId, bindings, env, root: run.root }, log);
 
+  const redirects = await deps.zoneRedirects(product.root, zone);
+
   log(` Setting zone: ${product.name} (${zone.domain})`);
-  await deps.applyZoneConfig(client, zone, { log });
+  await deps.applyZoneConfig(client, zone, { log, redirects });
   log(" Done: Cloudflare");
 }

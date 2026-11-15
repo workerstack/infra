@@ -1,6 +1,6 @@
 // This file imports only `.ts` files, so Node loads it without a bundler.
 import type { EnvBindings } from "./schema/bindings.ts";
-import type { InfraConfig, InfraConfigInput } from "./schema/infra.ts";
+import type { InfraConfig, InfraConfigInput, InfraEnv } from "./schema/infra.ts";
 import type { LocalConfig } from "./schema/local-config.ts";
 import { parseZoneConfig } from "./schema/zone.ts";
 
@@ -8,12 +8,16 @@ import { parseZoneConfig } from "./schema/zone.ts";
 // and its own subdomains (`api.example.localhost`) stay under it.
 const LOCAL_HOST = /^[a-z0-9-]+\.localhost$/;
 
-type Result<B extends Record<string, EnvBindings>> = InfraConfig & { cloudflare?: { bindings: B } };
+type Result<B extends Record<string, EnvBindings>, V extends InfraEnv> = InfraConfig<B, V> & {
+  cloudflare?: { bindings: B };
+};
 
 // Generic in the bindings only, so `cloudflare.bindings` keeps its names and excess properties stay errors.
 // `env` is kept by reference: no value of it is read here.
-export function defineInfraConfig<const B extends Record<string, EnvBindings>>(input: InfraConfigInput<B>): Result<B> {
-  const result: Result<B> = { env: input.env };
+export function defineInfraConfig<const B extends Record<string, EnvBindings>, const V extends InfraEnv>(
+  input: InfraConfigInput<B, V>,
+): Result<B, V> {
+  const result: Result<B, V> = { env: input.env };
 
   if (input.cloudflare !== undefined) {
     result.cloudflare = {

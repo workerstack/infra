@@ -6,6 +6,12 @@ export { createClient } from "./api/client.ts";
 
 export type { CfClient } from "./api/client.ts";
 
+export { createCfKit } from "./cf-kit/create-cf-kit.ts";
+
+export type { CfKit } from "./cf-kit/cf-kit.ts";
+
+export { isCfKit } from "./cf-kit/is-cf-kit.ts";
+
 export { defineInfraConfig } from "./define-infra-config.ts";
 
 export { discoverProducts, INFRA_CONFIG_FILE, selectProducts } from "./products.ts";

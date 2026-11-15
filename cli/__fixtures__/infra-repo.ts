@@ -19,7 +19,7 @@ export function infraRepo(global: Record<string, string>, args: readonly string[
   writeFileSync(
     join(repo, "infra.config.ts"),
     `import { defineInfraConfig } from ${JSON.stringify(DEFINE)};\n` +
-      `export default defineInfraConfig({ env: { dev: {}, global: ${JSON.stringify(global)}, local: {}, prod: {} } });\n`,
+      `export default defineInfraConfig({ env: { dev: {}, global: ${JSON.stringify(global)}, local: {}, prod: {}, sealedKeys: () => new Set() } });\n`,
   );
 
   if (withCf) writeStubCf(join(repo, "node_modules", "cf"));

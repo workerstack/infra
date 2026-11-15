@@ -2,7 +2,11 @@ import { expect, it } from "vitest";
 
 import type { CfClient } from "../api/client.ts";
 import { logLines } from "../provision/__fixtures__/log-lines.ts";
+import { applyAnswer } from "../runner/__fixtures__/apply-answer.ts";
 import { cloudflareConfig } from "../runner/__fixtures__/cloudflare-config.ts";
+import { applyZoneConfig } from "../runner/apply-zone-config.ts";
+import { fakeClient, writes } from "../shared/__fixtures__/fake-client.ts";
+import { fakeRedirect } from "./__fixtures__/set-deps.ts";
 import { product, testHost } from "./__fixtures__/test-host.ts";
 import { runZoneGet } from "./run-zone-get.ts";
 import { runZoneSet } from "./run-zone-set.ts";
@@ -34,6 +38,7 @@ it("zone-get and zone-set fail a product with no cloudflare zone", async () => {
     client: () => client,
     log: logLines().log,
     zoneGet: () => Promise.resolve(),
+    zoneRedirects: () => Promise.resolve([]),
   };
 
   const get = testHost([product("apps/web")]);
@@ -46,6 +51,7 @@ it("zone-get and zone-set fail a product with no cloudflare zone", async () => {
 });
 
 it("zone-set applies only the zone config", async () => {
+  const roots: string[] = [];
   const applied: string[] = [];
 
   const deps = {
@@ -56,10 +62,36 @@ it("zone-set applies only the zone config", async () => {
     },
     client: () => client,
     log: logLines().log,
+    zoneRedirects: (root: string) => {
+      roots.push(root);
+
+      return Promise.resolve([]);
+    },
   };
 
   const web = product("apps/web", { cloudflare: cloudflareConfig() });
 
   expect(await runZoneSet([], testHost([web]).host, deps)).toBe(0);
   expect(applied).toStrictEqual(["example.com"]);
+  expect(roots).toStrictEqual(["/repo/apps/web"]);
+});
+
+it("zone-set writes the product's redirect list to the redirect phase, right after the rate limits", async () => {
+  const { calls, client: zone } = fakeClient(applyAnswer());
+  const { lines, log } = logLines();
+
+  const deps = {
+    applyZoneConfig,
+    client: () => zone,
+    log,
+    zoneRedirects: (root: string) => Promise.resolve([fakeRedirect(root)]),
+  };
+
+  expect(await runZoneSet([], testHost([product("apps/web", { cloudflare: cloudflareConfig() })]).host, deps)).toBe(0);
+
+  const heads = lines.filter((line) => line.endsWith(" ..."));
+  const redirect = writes(calls).find((call) => JSON.stringify(call.body).includes("locale /repo/apps/web"));
+
+  expect(heads.slice(0, 4)).toStrictEqual(["  WAF ...", "  Rate limits ...", "  Redirects ...", "  Transforms ..."]);
+  expect(redirect?.path).toContain("/rulesets");
 });

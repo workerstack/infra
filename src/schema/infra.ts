@@ -21,19 +21,24 @@ export type InfraEnv = {
   readonly global: EnvView;
   readonly local: EnvView;
   readonly prod: EnvView;
+  /** The keys sealed in a scope: secret values that never go into a plain var. */
+  sealedKeys(scope: InfraScope): ReadonlySet<string>;
 };
 
 /**
  * Top-level multi-provider infrastructure config — pre-parse shape. Pass to `defineInfraConfig`.
  * Generic in the binding sets only, so `cloudflare.bindings` keeps its names.
  */
-export type InfraConfigInput<B extends Record<string, EnvBindings> = Record<string, EnvBindings>> = {
+export type InfraConfigInput<
+  B extends Record<string, EnvBindings> = Record<string, EnvBindings>,
+  V extends InfraEnv = InfraEnv,
+> = {
   /** Apple provider (Sign in with Apple). */
   apple?: AppleConfig;
   /** Cloudflare provider (zone, bindings, Access, Turnstile, R2). */
   cloudflare?: CloudflareConfigInput<B>;
   /** The product env holding the account credentials. */
-  env: InfraEnv;
+  env: V;
   /** Google provider (OAuth, Search Console). */
   google?: GoogleConfig;
   /** The local stack's host and URL vars. */
@@ -46,10 +51,13 @@ export type InfraConfigInput<B extends Record<string, EnvBindings> = Record<stri
  * Parsed infrastructure config — what runners consume. Same shape as input but with
  * zod defaults populated on the Cloudflare side.
  */
-export type InfraConfig = {
+export type InfraConfig<
+  _B extends Record<string, EnvBindings> = Record<string, EnvBindings>,
+  V extends InfraEnv = InfraEnv,
+> = {
   apple?: AppleConfig;
   cloudflare?: CloudflareConfig;
-  env: InfraEnv;
+  env: V;
   google?: GoogleConfig;
   local?: LocalConfig;
   microsoft?: MicrosoftConfig;

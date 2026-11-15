@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { fakeInfraEnv } from "./shared/__fixtures__/fake-infra-env.ts";
 import { wranglerEnv } from "./wrangler-env.ts";
-
-const NO_SCOPES = { dev: {}, local: {}, prod: {} };
 
 const full = {
   CLOUDFLARE_ACCOUNT_EMAIL: "a@b.c",
@@ -13,7 +12,7 @@ const full = {
 
 describe("wranglerEnv credentials", () => {
   it("returns base plus the credentials", () => {
-    expect(wranglerEnv({ ...NO_SCOPES, global: full }, { PATH: "/bin" })).toStrictEqual({
+    expect(wranglerEnv(fakeInfraEnv({ global: full }), { PATH: "/bin" })).toStrictEqual({
       CI: "true",
       CLOUDFLARE_ACCOUNT_ID: "acc",
       CLOUDFLARE_API_KEY: "key",
@@ -25,12 +24,12 @@ describe("wranglerEnv credentials", () => {
 
   it("drops a base token when the env has none", () => {
     const { CLOUDFLARE_API_TOKEN: _token, ...rest } = full;
-    const result = wranglerEnv({ ...NO_SCOPES, global: rest }, { CLOUDFLARE_API_TOKEN: "shell" });
+    const result = wranglerEnv(fakeInfraEnv({ global: rest }), { CLOUDFLARE_API_TOKEN: "shell" });
     expect(result.CLOUDFLARE_API_TOKEN).toBeUndefined();
   });
 
   it("throws the missing-key line", () => {
-    expect(() => wranglerEnv({ ...NO_SCOPES, global: { ...full, CLOUDFLARE_API_KEY: "" } }, {})).toThrow(
+    expect(() => wranglerEnv(fakeInfraEnv({ global: { ...full, CLOUDFLARE_API_KEY: "" } }), {})).toThrow(
       "CLOUDFLARE_API_KEY has no global value; run bun repo env set CLOUDFLARE_API_KEY --scope global",
     );
   });
@@ -47,7 +46,7 @@ describe("wranglerEnv guard", () => {
       },
     );
 
-    expect(() => wranglerEnv({ ...NO_SCOPES, global }, { VITEST: "true" })).toThrow(
+    expect(() => wranglerEnv(fakeInfraEnv({ global }), { VITEST: "true" })).toThrow(
       "refusing the account's cloud credentials",
     );
   });

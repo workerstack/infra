@@ -18,8 +18,9 @@ CF API GET /zones/abc/dns_records: Invalid zone identifier
 ```ts
 import { accountAuth, createClient } from "@workerstack/infra";
 import type { CfAuth, CfClient } from "@workerstack/infra";
+import { defineEnv } from "@workerstack/repo/env";
 
-const env = {
+const env = defineEnv({
   dev: {},
   global: {
     CLOUDFLARE_ACCOUNT_EMAIL: "ops@example.com",
@@ -28,7 +29,7 @@ const env = {
   },
   local: {},
   prod: {},
-};
+});
 
 const auth: CfAuth = accountAuth(env);
 const client: CfClient = createClient(auth, "0123456789abcdef0123456789abcdef");

@@ -1,7 +1,9 @@
 import type { CfClient } from "../api/client.ts";
+import type { RedirectRule } from "../operations/redirect-rule.ts";
 import { setAgentReadinessSettings } from "../operations/set-agent-readiness-settings.ts";
 import { setCacheRules } from "../operations/set-cache-rules.ts";
 import { setRateLimitRules } from "../operations/set-rate-limit-rules.ts";
+import { setRedirectRules } from "../operations/set-redirect-rules.ts";
 import { setSpeedSettings } from "../operations/set-speed-settings.ts";
 import { setSslSettings } from "../operations/set-ssl-settings.ts";
 import { setTransformRules } from "../operations/set-transform-rules.ts";
@@ -17,9 +19,16 @@ import { applyZoneStep } from "./apply-zone-step.ts";
 import { reportHstsPreloadStatus } from "./report-hsts-preload-status.ts";
 import type { ZoneApplyOptions } from "./zone-apply-options.ts";
 
+type Step = [string, () => Promise<void>];
+
+function redirectSteps(client: CfClient, redirects: readonly RedirectRule[] | undefined): Step[] {
+  return redirects === undefined ? [] : [["Redirects", () => setRedirectRules(client, redirects)]];
+}
+
 /**
- * Applies every zone setting except the generated zone redirects, in order, printing a progress line per step.
- * With HSTS preload on it also prints where the domain stands on the preload list.
+ * Applies every zone setting, in order, printing a progress line per step. The zone's whole redirect list
+ * (`zoneRedirects`) is written right after the rate limits when `options.redirects` is given; without it the
+ * redirect phase is left alone. With HSTS preload on it also prints where the domain stands on the preload list.
  */
 export async function applyZoneConfig(
   client: CfClient,
@@ -29,16 +38,17 @@ export async function applyZoneConfig(
   const log = options.log ?? stdoutLog;
   const { hsts } = config.ssl;
 
-  const before: Array<[string, () => Promise<void>]> = [
+  const before: Step[] = [
     ["WAF", () => setWafRules(client, config)],
     ["Rate limits", () => setRateLimitRules(client, config)],
+    ...redirectSteps(client, options.redirects),
     ["Transforms", () => setTransformRules(client, config)],
     ["Cloud Connector", () => setCloudConnectorRules(client, config)],
     ["Worker routes (disabled)", () => setDisabledWorkerRoutes(client, config, log)],
     ["SSL/TLS", () => setSslSettings(client, config)],
   ];
 
-  const after: Array<[string, () => Promise<void>]> = [
+  const after: Step[] = [
     ["Speed", () => setSpeedSettings(client, config)],
     ["Agent-readiness", () => setAgentReadinessSettings(client, config, log)],
     ["Cache", () => setCacheRules(client, config)],

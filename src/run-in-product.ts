@@ -9,6 +9,8 @@ import { discoverProducts, productAt } from "./products.ts";
 import { repoRoot } from "./repo-root.ts";
 import type { InfraEnv } from "./schema/infra.ts";
 
+const NO_ENV: InfraEnv = { dev: {}, global: {}, local: {}, prod: {}, sealedKeys: () => new Set() };
+
 export type ProductRun = {
   /** The command's name, shown in front of an error. */
   name: string;
@@ -36,7 +38,7 @@ export async function runInProduct(run: ProductRun): Promise<number> {
     if (!selection.ok) throw new Error(selection.error);
 
     const [product] = selection.products;
-    const env = run.childEnv(product?.config.env ?? { dev: {}, global: {}, local: {}, prod: {} });
+    const env = run.childEnv(product?.config.env ?? NO_ENV);
     const { args, file } = run.program(root);
 
     return await exitCode({ args, cwd: resolve(run.cwd), env, file });

@@ -4,8 +4,9 @@ import { expect, expectTypeOf, it } from "vitest";
 import { defineInfraConfig } from "./define-infra-config.ts";
 import type { InfraEnv } from "./schema/infra.ts";
 import type { ZoneConfigInput } from "./schema/zone.ts";
+import { fakeInfraEnv } from "./shared/__fixtures__/fake-infra-env.ts";
 
-const env: InfraEnv = { dev: {}, global: {}, local: {}, prod: {} };
+const env = fakeInfraEnv();
 
 const ZONE_ID = "0123456789abcdef0123456789abcdef";
 
@@ -130,6 +131,7 @@ it("defines without reading an env value", () => {
     },
     local: {},
     prod: {},
+    sealedKeys: () => new Set(),
   };
 
   expect(defineInfraConfig({ env: throwing }).env).toBe(throwing);
@@ -153,4 +155,14 @@ it("rejects a removed credential field", () => {
       env,
     }),
   ).not.toThrow();
+});
+
+it("keeps the env type so a kit can check key names", () => {
+  const real = defineEnv({ dev: {}, global: {}, local: { GREETING: "hi" }, prod: {} });
+  const config = defineInfraConfig({ env: real });
+
+  expectTypeOf(config.env).toEqualTypeOf<typeof real>();
+  expectTypeOf(config.env.local).toHaveProperty("GREETING");
+  // @ts-expect-error NOPE is not a key of the env's local view
+  expectTypeOf(config.env.local).toHaveProperty("NOPE");
 });

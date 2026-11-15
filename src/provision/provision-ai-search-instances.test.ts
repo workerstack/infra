@@ -3,11 +3,12 @@ import { describe, expect, it } from "vitest";
 import { okBody } from "../api/__fixtures__/fake-fetch.ts";
 import type { Sent } from "../api/__fixtures__/fake-fetch.ts";
 import type { AiSearchInstanceConfig, EnvBindings } from "../schema/bindings.ts";
+import { fakeInfraEnv } from "../shared/__fixtures__/fake-infra-env.ts";
 import { logLines } from "./__fixtures__/log-lines.ts";
 import { aiSearchPatch } from "./ai-search-patch.ts";
 import { provisionAiSearchInstances } from "./provision-ai-search-instances.ts";
 
-const ENV = { dev: {}, global: { CLOUDFLARE_API_TOKEN: "tok" }, local: {}, prod: {} };
+const ENV = fakeInfraEnv({ global: { CLOUDFLARE_API_TOKEN: "tok" } });
 const BASE = "https://api.cloudflare.com/client/v4/accounts/acc/ai-search/namespaces/default/instances";
 const INSTANCE = { embedding_model: "m", modified_on: "t", name: "example-search-dev", status: "active" };
 const MODEL = "@cf/baai/bge-base-en-v1.5";

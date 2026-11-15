@@ -1,10 +1,11 @@
 import type { Product } from "../../products.ts";
 import type { InfraConfig } from "../../schema/infra.ts";
 import type { CommandHost } from "../command-host.ts";
+import { fakeInfraEnv } from "../../shared/__fixtures__/fake-infra-env.ts";
 
 /** A product named `name` under `/repo/<name>` with `config`. */
 export function product(name: string, config: Partial<InfraConfig> = {}): Product {
-  const env = { dev: {}, global: { CLOUDFLARE_ACCOUNT_ID: "acc" }, local: {}, prod: {} };
+  const env = fakeInfraEnv({ global: { CLOUDFLARE_ACCOUNT_ID: "acc" } });
   const root = `/repo/${name}`;
 
   return { config: { env, ...config }, configFile: `${root}/infra.config.ts`, name, root };

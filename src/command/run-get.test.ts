@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 
 import { cloudflareConfig } from "../runner/__fixtures__/cloudflare-config.ts";
+import { fakeInfraEnv } from "../shared/__fixtures__/fake-infra-env.ts";
 import { product, testHost } from "./__fixtures__/test-host.ts";
 import type { GetDeps } from "./get-deps.ts";
 import { runGet } from "./run-get.ts";
@@ -38,7 +39,7 @@ it("get reports Cloudflare, then Google, Apple and Microsoft under their heading
 
 it("get names the missing account id for a product that lacks it", async () => {
   const bare = { ...product("apps/web", { cloudflare: cloudflareConfig() }) };
-  const config = { ...bare.config, env: { dev: {}, global: {}, local: {}, prod: {} } };
+  const config = { ...bare.config, env: fakeInfraEnv() };
   const { err, host } = testHost([{ ...bare, config }]);
 
   expect(await runGet([], host, deps([]))).toBe(1);

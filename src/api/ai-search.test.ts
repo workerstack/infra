@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { fakeInfraEnv } from "../shared/__fixtures__/fake-infra-env.ts";
 import { fakeFetch, okBody } from "./__fixtures__/fake-fetch.ts";
 import {
   deleteAiSearchInstance,
@@ -10,7 +11,7 @@ import {
 } from "./ai-search.ts";
 
 const BASE = "https://api.cloudflare.com/client/v4/accounts/acc1/ai-search/namespaces/default/instances";
-const env = { dev: {}, global: { CLOUDFLARE_API_TOKEN: "tok" }, local: {}, prod: {} };
+const env = fakeInfraEnv({ global: { CLOUDFLARE_API_TOKEN: "tok" } });
 const instance = { embedding_model: "m", modified_on: "t", name: "docs search", status: "active" };
 
 describe("AI Search reads", () => {

@@ -5,7 +5,7 @@ order: 50
 
 # Commands
 
-Four commands check and change what a product's config describes. Each takes `[name|--all]`.
+Five commands check, change and generate what a product's config describes. Each takes `[name|--all]`.
 
 ```console
 $ infra get              # the product holding the current dir, else the only product
@@ -14,14 +14,16 @@ $ infra get --all
 $ infra set web
 $ infra zone-get web
 $ infra zone-set web
+$ infra gen web --check
 ```
 
 | Command         | What it does                                                                                                     |
 | --------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `infra get`     | Reports the live Cloudflare account and zone, then Google, Apple and Microsoft, against the config. Changes nothing. |
-| `infra set`     | Provisions bindings, Access and AI Search, applies the zone, then applies Google, Apple and Microsoft.            |
+| `infra set`     | Provisions bindings, Access and AI Search, applies the zone and its redirects, then applies Google, Apple and Microsoft.            |
 | `infra zone-get`| Reports the zone: rules, drift, declared bindings, R2, AI Search and Turnstile.                                   |
-| `infra zone-set`| Applies the zone settings only. Zone redirects are not applied yet.                                               |
+| `infra zone-set`| Applies the zone settings and the generated zone and locale redirects only.                                      |
+| `infra gen`     | Writes each Worker package's `.cloudflare/wrangler.<scope>.json` and `.dev.vars.<scope>`. `--check` writes nothing and fails on drift. |
 
 ## Target
 
@@ -33,7 +35,7 @@ $ infra zone-set web
 infra get: 2 products; name one or pass --all: apps/admin, apps/web
 ```
 
-An extra argument or an unknown flag prints `usage: infra get [name|--all]` and exits 2.
+An extra argument or an unknown flag prints `usage: infra get [name|--all]` and exits 2; `infra gen` prints `usage: infra gen [name|--all] [--check]`.
 
 A failing product prints `infra <command>: <product>: <message>`. The rest still run, and the exit code is 1.
 

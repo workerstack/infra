@@ -1,6 +1,7 @@
 import type { CfFetch } from "../../api/cf-fetch.ts";
 import type { InfraEnv } from "../../schema/infra.ts";
 import type { MicrosoftConfig } from "../../schema/microsoft.ts";
+import { fakeInfraEnv } from "../../shared/__fixtures__/fake-infra-env.ts";
 
 /** A prod Microsoft app whose `clientId` is `clientId`, `example` names. */
 export function microsoftConfig(clientId: string): MicrosoftConfig {
@@ -13,12 +14,10 @@ export function microsoftConfig(clientId: string): MicrosoftConfig {
 
 /** An env with the graph token and, optionally, the prod client secret. */
 export function microsoftEnv(token: string | undefined, secret?: string): InfraEnv {
-  return {
-    dev: {},
+  return fakeInfraEnv({
     global: token === undefined ? {} : { MICROSOFT_GRAPH_API_TOKEN: token },
-    local: {},
     prod: secret === undefined ? {} : { MICROSOFT_CLIENT_SECRET: secret },
-  };
+  });
 }
 
 /** One request a Graph fake received. */

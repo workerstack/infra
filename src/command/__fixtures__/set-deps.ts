@@ -1,9 +1,27 @@
 import type { CfClient } from "../../api/client.ts";
+import type { RedirectRule } from "../../operations/redirect-rule.ts";
 import type { SecretWrite } from "../../provision/secret-write.ts";
 import type { SetDeps } from "../set-deps.ts";
 
-/** What the fake set deps saw: the order of runner calls, the file writes and the secret writes. */
-export type SetTrace = { calls: string[]; files: Map<string, string>; secrets: SecretWrite[] };
+/** What the fake set deps saw: the order of runner calls, the file writes, the secret writes and the redirects applied. */
+export type SetTrace = {
+  calls: string[];
+  files: Map<string, string>;
+  redirects: (readonly RedirectRule[] | undefined)[];
+  secrets: SecretWrite[];
+};
+
+/** The one redirect rule the fake `zoneRedirects` answers for a product root. */
+export function fakeRedirect(root: string): RedirectRule {
+  return {
+    description: `locale ${root}`,
+    enabled: true,
+    expression: "true",
+    preserveQueryString: true,
+    statusCode: 302,
+    targetExpression: '"/hr"',
+  };
+}
 
 const nothing = { edits: [], secrets: [] };
 
@@ -12,7 +30,7 @@ export function fakeSetDeps(
   files: Record<string, string>,
   results: { access: SecretWrite; microsoft: SecretWrite; turnstile: SecretWrite },
 ): { deps: SetDeps; trace: SetTrace } {
-  const trace: SetTrace = { calls: [], files: new Map(Object.entries(files)), secrets: [] };
+  const trace: SetTrace = { calls: [], files: new Map(Object.entries(files)), redirects: [], secrets: [] };
   const client: CfClient = { request: () => Promise.reject(new Error("unused")), zoneId: "zid" };
   const step = (name: string): void => {
     trace.calls.push(name);
@@ -29,8 +47,9 @@ export function fakeSetDeps(
         secrets: [results.microsoft],
       });
     },
-    applyZoneConfig: () => {
+    applyZoneConfig: (_client, _zone, options) => {
       step("zone");
+      trace.redirects.push(options?.redirects);
 
       return Promise.resolve();
     },
@@ -66,6 +85,11 @@ export function fakeSetDeps(
       step("write-secrets");
 
       return Promise.resolve();
+    },
+    zoneRedirects: (root) => {
+      step("redirects");
+
+      return Promise.resolve([fakeRedirect(root)]);
     },
   };
 

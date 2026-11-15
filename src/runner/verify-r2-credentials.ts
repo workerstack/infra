@@ -1,9 +1,9 @@
 import type { CloudflareR2Credentials } from "../schema/cloudflare-env.ts";
 import type { InfraEnv } from "../schema/infra.ts";
+import { R2_SECRET_KEY } from "../shared/infra-keys.constants.ts";
 import { INFRA_SCOPES } from "../shared/infra-scopes.constants.ts";
 import type { R2CredentialsVerification } from "./r2-credentials-verification.ts";
 import { R2_ENDPOINT_PATTERN } from "./r2-endpoint-pattern.constants.ts";
-import { R2_SECRET_KEY } from "./r2-secret-key.constants.ts";
 
 /**
  * Checks the access key id is set, `R2_SECRET_ACCESS_KEY` has a value in some scope of the env, and the endpoint
