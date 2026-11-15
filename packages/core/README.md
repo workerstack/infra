@@ -503,7 +503,7 @@ import infra from "../infra.config.ts";
 export default infra.worker("api", {
   compatibilityDate: "2026-01-20",
   d1: ["DB"],
-  entrypoint: "./src/index.ts",
+  entrypoint: "./src/index.worker.ts",
   routes: ["example.com/api/*"],
   secrets: ["API_KEY"],
   vars: ["GREETING"],
@@ -514,6 +514,7 @@ export default infra.worker("api", {
 
 - `d1`, `kv`, `r2`, `queue`, `aiSearch`, `analytics`, `secrets`, `vars` and `ratelimits` take what the kit's method of that name takes; `services` maps a binding to a target Worker's base name. `vars` unset means no vars, not even `ENVIRONMENT`.
 - `routes` land on the config's zone; `zone` overrides it. Routes with no zone fail naming the Worker.
+- `entrypoint` names the Worker module. Name it `*.worker.ts`: @workerstack/repo treats that file and every `*.config.ts` as loaded by a tool, so knip needs no ignore and the default export needs no lint skip.
 - `extra(scope)` is merged last, for anything the shorthand does not cover: its `env` beside the shorthand's bindings, its `triggers` after the routes, any other key over the rest.
 
 The long form still works, for what `extra` cannot say (a container, routes in one scope only): the same methods by hand.
@@ -526,7 +527,7 @@ export default defineConfig(({ mode }) => {
     worker: {
       ...infra.defaults,
       env: { ...infra.d1(scope, "DB"), ...infra.secrets("API_KEY"), ...infra.vars(scope, "GREETING") },
-      entrypoint: "./src/index.ts",
+      entrypoint: "./src/index.worker.ts",
       name: infra.name("api", scope),
     },
   };
