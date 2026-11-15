@@ -24,3 +24,6 @@ knip.unignored-*.jsonc
 .grok/
 # /repo:ignore
 dist/
+.cloudflare/
+.dev.vars*
+.wrangler/

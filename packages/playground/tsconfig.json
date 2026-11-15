@@ -1,0 +1,5 @@
+{
+  "exclude": ["node_modules", ".tmp", ".cloudflare", ".wrangler"],
+  "extends": "../../tsconfig.base.json",
+  "include": ["**/*.ts"]
+}

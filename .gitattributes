@@ -1,4 +1,4 @@
-# repo:generated d309c093
+# repo:generated ca3cc5b9
 * text=auto eol=lf
 .githooks/commit-msg linguist-generated
 .githooks/pre-commit linguist-generated
@@ -11,4 +11,5 @@
 bunfig.toml linguist-generated
 packages/core/README.md linguist-generated
 packages/core/bunfig.toml linguist-generated
+packages/playground/bunfig.toml linguist-generated
 # /repo:generated

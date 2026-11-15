@@ -36,6 +36,22 @@
         "zod": "^4.6.7",
       },
     },
+    "packages/playground": {
+      "name": "@workerstack/infra-playground",
+      "dependencies": {
+        "@cloudflare/config": "0.30.2",
+        "@workerstack/database": "^0.24.0",
+        "@workerstack/infra": "workspace:*",
+        "@workerstack/repo": "0.2.0-rc.0",
+        "cf": "1.0.0-beta.28",
+        "wrangler": "4.152.0",
+        "zod": "^4.6.7",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.4.4",
+        "typescript": "^5.9.3",
+      },
+    },
   },
   "packages": {
     "@andrewbranch/untar.js": ["@andrewbranch/untar.js@1.0.4", "", {}, "sha512-pVXSwPsLuw8IGLo2Di0EaOfsk+ntVvpkk942J/sHYIkwvtKUakEcPh7HBgZ6tuimgzKSEHgCvO4XgQ05DEbwDw=="],
@@ -627,6 +643,8 @@
     "@workerstack/database": ["@workerstack/database@0.24.0", "", { "dependencies": { "@types/pluralize": "0.0.33", "pluralize": "8.0.0" }, "peerDependencies": { "@libsql/client": ">=0.17.4 <0.18", "@noble/ciphers": ">=2.0.0 <3", "@noble/hashes": ">=2.0.0 <3", "drizzle-kit": "1.0.0-rc.4 || 1.0.0-rc.5 || ^1.0.0", "drizzle-orm": "1.0.0-rc.4 || 1.0.0-rc.5 || ^1.0.0", "libpg-query": ">=17.7.4 <18", "postgres": ">=3.4.9 <4", "ts-morph": ">=28.0.0 <29", "typescript": ">=5.7.2", "wrangler": ">=4.147.0 <5", "zod": ">=4.6.0 <5" }, "optionalPeers": ["@libsql/client", "drizzle-kit", "libpg-query", "postgres", "ts-morph", "typescript", "wrangler"], "bin": { "database": "src/bin.ts" } }, "sha512-h/EgM5JDzVY/fK1Zs6YaAsj5BUu+IccyU2m1gpZLeq4pzYkS23zN9syVNYmEWb2zleTMGepJ8O18ObXR6m54zA=="],
 
     "@workerstack/infra": ["@workerstack/infra@workspace:packages/core"],
+
+    "@workerstack/infra-playground": ["@workerstack/infra-playground@workspace:packages/playground"],
 
     "@workerstack/references": ["@workerstack/references@0.1.1", "", {}, "sha512-JNB1a1QMHbTxckZ2HgT7wIAEIKw5Z6GKOu2w1rnf6BneQyVoOpm0KWuYE0ek4pWq8fVSgLdJFkhqdyePwIvcCw=="],
 

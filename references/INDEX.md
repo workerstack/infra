@@ -1,10 +1,12 @@
 # References
 
-<!-- repo:packages 789eb251 -->
+<!-- repo:packages e4422a77 -->
 - [@workerstack/infra](../packages/core/references/INDEX.md): References
+- [@workerstack/infra-playground](../packages/playground/references/INDEX.md): References
 <!-- /repo:packages -->
 
-<!-- repo:stack 67f979b7 -->
+<!-- repo:stack 6cd694eb -->
+- [@workerstack/infra](../node_modules/@workerstack/infra/references/INDEX.md)
 - [@workerstack/repo](../node_modules/@workerstack/repo/references/INDEX.md)
 <!-- /repo:stack -->
 

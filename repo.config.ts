@@ -7,9 +7,34 @@ export default defineConfig({
   lint: {
     skip: [
       {
-        files: ["packages/core/src/local/dispatcher.worker.ts"],
+        files: ["packages/core/src/local/dispatcher.worker.ts", "packages/playground/api/src/worker.ts"],
         rules: ["import/no-default-export"],
         reason: "a Worker module's fetch handler is its default export, the only entrypoint `wrangler dev` serves",
+      },
+    ],
+  },
+  knip: {
+    ignore: [
+      {
+        file: "packages/playground/infra.config.ts",
+        reason: "infra gen and infra loc discover it by name; nothing imports it",
+      },
+      {
+        file: "packages/playground/kit.cf-kit.ts",
+        reason: "infra gen finds the product's one kit by its *.cf-kit.ts name",
+      },
+      { file: "packages/playground/config.ts", reason: "only the ignored infra.config.ts and kit file import it" },
+      {
+        file: "packages/playground/api/cloudflare.config.ts",
+        reason: "infra gen finds each Worker by its cloudflare.config.ts",
+      },
+      {
+        file: "packages/playground/api/wrangler.config.ts",
+        reason: "infra gen reads it by name beside the Worker's cloudflare.config.ts",
+      },
+      {
+        file: "packages/playground/api/src/worker.ts",
+        reason: "the Worker's entrypoint in cloudflare.config.ts is a path string",
       },
     ],
   },

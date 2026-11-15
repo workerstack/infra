@@ -1,0 +1,25 @@
+{
+  "name": "@workerstack/infra-playground",
+  "private": true,
+  "description": "A product that runs on @workerstack/infra, imported the way a consumer imports it",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "gen": "bun run --cwd ../core build && infra gen",
+    "loc": "bun run --cwd ../core build && infra loc",
+    "typecheck": "bun --bun tsc -p ."
+  },
+  "dependencies": {
+    "@cloudflare/config": "0.30.2",
+    "@workerstack/database": "^0.24.0",
+    "@workerstack/infra": "workspace:*",
+    "@workerstack/repo": "0.2.0-rc.0",
+    "cf": "1.0.0-beta.28",
+    "wrangler": "4.152.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "typescript": "^5.9.3"
+  }
+}

@@ -72,6 +72,45 @@
       }
     },
     {
+      "label": "workerstack:infra-playground:gen",
+      "type": "shell",
+      "command": "bun run gen",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/playground"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "workerstack:infra-playground:loc",
+      "type": "shell",
+      "command": "bun run loc",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/playground"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "workerstack:infra-playground:typecheck",
+      "type": "shell",
+      "command": "bun run typecheck",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/playground"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      }
+    },
+    {
       "label": "workerstack:infra:build",
       "type": "shell",
       "command": "bun run build",
