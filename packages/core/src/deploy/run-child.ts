@@ -2,15 +2,15 @@ import { spawn } from "node:child_process";
 import type { StdioOptions } from "node:child_process";
 
 import { FAILURE_EXIT } from "../failure-exit.constants.ts";
+import type { PeerProgram } from "../peer-program.ts";
 import type { ChildOptions } from "./child-options.ts";
-import type { DeployProgram } from "./deploy-program.ts";
 
 /**
  * Runs the program and resolves to its exit code (a signal is 1). With `capture`, stdin is closed and stdout is
  * read; otherwise the child shares the terminal.
  */
 export function runChild(
-  program: DeployProgram,
+  program: PeerProgram,
   child: ChildOptions,
   options: { capture: boolean },
 ): Promise<{ code: number; stdout: string }> {

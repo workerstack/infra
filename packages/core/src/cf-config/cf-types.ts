@@ -3,7 +3,8 @@ import { promisify } from "node:util";
 
 import { z } from "zod";
 
-import { cfCommand } from "../cf-command.ts";
+import { appendArgs } from "../append-args.ts";
+import { peerProgram } from "../peer-program.ts";
 import type { InfraScope } from "../schema/infra.ts";
 import { nodeChildEnv } from "./node-child-env.ts";
 
@@ -19,7 +20,7 @@ function saidText(output: Output): string | undefined {
  * writes `.cloudflare/types/index.d.ts`. What `infra gen` runs after writing a package.
  */
 export async function cfTypes(dir: string, scope: InfraScope): Promise<void> {
-  const program = cfCommand(dir, ["workers", "types", "--mode", scope], process.execPath);
+  const program = appendArgs(peerProgram(dir, "cf", "cf"), ["workers", "types", "--mode", scope]);
 
   try {
     await promisify(execFile)(program.file, program.args, { cwd: dir, env: nodeChildEnv() });

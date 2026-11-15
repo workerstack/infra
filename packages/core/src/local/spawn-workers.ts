@@ -1,9 +1,9 @@
 import { join } from "node:path";
 
-import { wranglerCommand } from "../logs/wrangler-command.ts";
+import { appendArgs } from "../append-args.ts";
+import { peerProgram } from "../peer-program.ts";
 import { freePort } from "./free-port.ts";
 import { LOOPBACK, STATE_DIR } from "./local.constants.ts";
-import { realNode } from "./real-node.ts";
 import type { SpawnContext } from "./spawn-context.ts";
 import { spawnGroup } from "./spawn-group.ts";
 import type { StackMember } from "./stack-candidate.ts";
@@ -43,7 +43,11 @@ export async function spawnWorkers(workers: readonly StackMember[], context: Spa
 
   const ports = { inspector: await freePort(), port: await freePort() };
   const configs = [dispatcher, ...workers.map((worker) => worker.config)];
-  const program = wranglerCommand(context.productRoot, devArgs(configs, ports, context.productRoot), realNode());
+
+  const program = appendArgs(
+    peerProgram(context.productRoot, "wrangler", "wrangler"),
+    devArgs(configs, ports, context.productRoot),
+  );
 
   const child = await spawnGroup({
     cmd: [program.file, ...program.args],

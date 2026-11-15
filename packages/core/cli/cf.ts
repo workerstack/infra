@@ -1,5 +1,6 @@
-import { cfCommand } from "../src/cf-command.ts";
+import { appendArgs } from "../src/append-args.ts";
 import { cfEnv } from "../src/cf-env.ts";
+import { peerProgram } from "../src/peer-program.ts";
 import { runInProduct } from "../src/run-in-product.ts";
 import { USAGE_EXIT } from "../src/usage-exit.constants.ts";
 
@@ -15,6 +16,6 @@ export function main(args: readonly string[]): Promise<number> {
     cwd: process.cwd(),
     dir: process.cwd(),
     name: "cf",
-    program: (root) => cfCommand(root, args, process.execPath),
+    program: (root) => appendArgs(peerProgram(root, "cf", "cf"), args),
   });
 }

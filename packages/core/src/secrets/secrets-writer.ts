@@ -1,6 +1,6 @@
 import { relative, sep } from "node:path";
 
-import { peerBin } from "../peer-bin.ts";
+import { peerProgram } from "../peer-program.ts";
 import type { Product } from "../products.ts";
 import type { SecretWrite } from "../provision/secret-write.ts";
 import { runInOrder } from "../shared/run-in-order.ts";
@@ -20,12 +20,12 @@ export function secretsWriter(deps: SecretsDeps) {
       );
     }
 
-    const bin = peerBin(root, "@workerstack/repo", "repo");
+    const program = peerProgram(root, "@workerstack/repo", "repo");
     const shown = relative(root, file).split(sep).join("/");
 
     await runInOrder(secrets, async ({ key, scope, value }) => {
-      const args = [bin, "env", "set", key, "--scope", scope, "--file", shown];
-      const code = await deps.spawn({ args, command: process.execPath, cwd: root, stdin: value });
+      const args = [...program.args, "env", "set", key, "--scope", scope, "--file", shown];
+      const code = await deps.spawn({ args, command: program.file, cwd: root, stdin: value });
 
       if (code !== 0) throw new Error(`bun repo env set ${key} (${scope}) exited ${code}`);
       deps.log(`wrote ${key} (${scope}) with bun repo env set`);

@@ -30,6 +30,8 @@ export async function envRepo(envText: string, code: number): Promise<EnvRepo> {
   mkdirSync(web, { recursive: true });
   writeFileSync(join(root, "package.json"), "{}");
   writeFileSync(join(peer, "package.json"), JSON.stringify({ bin: { repo: "./bin/repo.ts" } }));
+  mkdirSync(join(peer, "bin"), { recursive: true });
+  writeFileSync(join(peer, "bin", "repo.ts"), "export {};\n");
   writeFileSync(join(web, "infra.config.ts"), 'import { env } from "./env.ts";\nexport default { env };\n');
   writeFileSync(join(web, "env.ts"), envText);
   const [product] = await discoverProducts(root);
